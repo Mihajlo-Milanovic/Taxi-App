@@ -1,54 +1,29 @@
 import express from 'express';
-import {
-    getAllDrivers,
-    getDriverById,
-    createDriver,
-    updateDriverLocation,
-    updateDriverAvailability,
-    getNearbyDrivers
-} from '../controllers/driverController';
+import * as dc from '../controllers/driverController';
 
-const router = express.Router();
-
-// Rute za voza?e
+const driverRouter = express.Router();
 
 /**
- * GET /api/drivers/nearby?latitude=44.8&longitude=20.5&radius=5
+ * GET /drivers/nearby?lat=44.8&lng=20.5&radius=5
  * Mora biti PRE /:id rute jer ina?e Express misli da je "nearby" :id parametar
  */
-router.get('/nearby', getNearbyDrivers);
+driverRouter.get('/nearby', dc.getNearbyDrivers); //TODO: staviti u vozilo
 
 /**
- * GET /api/drivers
- * Dobija sve voza?e
- */
-router.get('/', getAllDrivers);
-
-/**
- * GET /api/drivers/:id
- * Dobija voza?a po ID-u
- */
-router.get('/:id', getDriverById);
-
-/**
- * POST /api/drivers
- * Kreira novog voza?a
- * Body: { name, latitude, longitude }
- */
-router.post('/', createDriver);
-
-/**
- * PUT /api/drivers/:id/location
- * Ažurira lokaciju voza?a
+ * PUT /drivers/:id/location
  * Body: { latitude, longitude }
  */
-router.put('/:id/location', updateDriverLocation);
+driverRouter.put('/:id/location', dc.updateDriverLocation);
+
+driverRouter.get('/', dc.getAllDrivers);
+
+driverRouter.get('/:id', dc.getDriverById);
+
+driverRouter.post('/', dc.createDriver);
 
 /**
- * PATCH /api/drivers/:id/availability
- * Ažurira dostupnost voza?a
- * Body: { isAvailable }
+ * Body: { isAvailable [offline, occupied, available] }
  */
-router.patch('/:id/availability', updateDriverAvailability);
+driverRouter.put('/:id/availability', dc.updateDriverAvailability);
 
-export default router;
+export default driverRouter;

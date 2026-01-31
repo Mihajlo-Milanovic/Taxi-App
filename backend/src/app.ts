@@ -8,27 +8,24 @@ import rideRoutes from "./routes/rideRoutes";
 
 const app: Application = express();
 
-app.use(express.json()); // PRE ruta
-app.use(logger);         
+app.use(express.json());
+app.use(logger);
+app.use(errorHandler);
+
+app.use('/drivers', driverRoutes);
+app.use('/passengers', passengerRoutes);
+app.use('/rides', rideRoutes);
 
 // Root ruta
 app.get("/", (req: express.Request, res: express.Response) => {
     res.json({
         message: "Taxi app is running...",
-        endpoints: {
-            drivers: "/api/drivers",
-            passengers: "/api/passengers",
-            rides: "/api/rides"
-        }
+        endpoints: [
+            "drivers",
+            "passengers",
+            "rides"
+        ]
     });
 });
-
-// API rute
-app.use('/api/drivers', driverRoutes);
-app.use('/api/passengers', passengerRoutes);
-app.use('/api/rides', rideRoutes);
-
-app.use(errorHandler); // posle svih ruta!!!!!!!1
-
 
 export default app;

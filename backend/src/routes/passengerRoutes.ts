@@ -1,37 +1,15 @@
 import express from 'express';
-import {
-    getAllPassengers,
-    getPassengerById,
-    createPassenger,
-    updatePassengerLocation
-} from '../controllers/passengerController';
+import * as pc from '../controllers/passengerController';
 
-const router = express.Router();
+const passengerRouter = express.Router();
 
-/**
- * GET /api/passengers
- * Dobija sve putnike
- */
-router.get('/', getAllPassengers);
 
-/**
- * GET /api/passengers/:id
- * Dobija putnika po ID-u
- */
-router.get('/:id', getPassengerById);
+passengerRouter.post('/', pc.createPassenger);
 
-/**
- * POST /api/passengers
- * Kreira novog putnika
- * Body: { latitude, longitude }
- */
-router.post('/', createPassenger);
+passengerRouter.get('/', pc.getAllPassengers);
 
-/**
- * PUT /api/passengers/:id/location
- * Ažurira lokaciju putnika
- * Body: { latitude, longitude }
- */
-router.put('/:id/location', updatePassengerLocation);
+passengerRouter.get('/:id', pc.getPassengerById);
 
-export default router;
+passengerRouter.put('/:id', pc.updatePassenger);
+
+export default passengerRouter;

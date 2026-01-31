@@ -65,7 +65,7 @@ export const createPassenger = async (req: Request, res: Response, next: NextFun
 
         res.status(201).json({
             success: true,
-            message: "Putnik uspešno kreiran",
+            message: "Putnik uspeï¿½no kreiran",
             data: {
                 passenger: {
                     // id: passengerId,
@@ -80,11 +80,11 @@ export const createPassenger = async (req: Request, res: Response, next: NextFun
 };
 
 /**
- * Ažurira lokaciju putnika
+ * Aï¿½urira lokaciju putnika
  * PUT /api/passengers/:id/location
  * Body: { latitude, longitude }
  */
-export const updatePassengerLocation = async (req: Request, res: Response, next: NextFunction) => {
+export const updatePassenger = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
         const { latitude, longitude } = req.body;
@@ -100,7 +100,7 @@ export const updatePassengerLocation = async (req: Request, res: Response, next:
 
         res.status(200).json({
             success: true,
-            message: "Lokacija putnika ažurirana",
+            message: "Lokacija putnika aï¿½urirana",
             data: { id, latitude, longitude }
         });
     } catch (error) {
