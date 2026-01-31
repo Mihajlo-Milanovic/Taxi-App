@@ -1,73 +1,29 @@
 import express from 'express';
-import {
-    getAllRides,
-    getRideById,
-    createRide,
-    acceptRide,
-    startRide,
-    completeRide,
-    cancelRide,
-    getActiveRideByPassenger,
-    getActiveRideByDriver
-} from '../controllers/rideController';
+import * as rc from '../controllers/rideController';
 
-const router = express.Router();
+const rideRouter = express.Router();
 
-/**
- * GET /api/rides/passenger/:passengerId/active
- * Mora biti PRE /:id rute
- */
-router.get('/passenger/:passengerId/active', getActiveRideByPassenger);
+rideRouter.get('/passenger/:passengerId/active', rc.getActiveRideByPassenger);
 
-/**
- * GET /api/rides/driver/:driverId/active
- * Mora biti PRE /:id rute
- */
-router.get('/driver/:driverId/active', getActiveRideByDriver);
+rideRouter.get('/driver/:driverId/active', rc.getActiveRideByDriver);
 
-/**
- * GET /api/rides
- * Dobija sve vožnje
- */
-router.get('/', getAllRides);
+    //TODO: Za ove gore dve ne znam moze li redis to da ostvari
+    //moralo bi da se koristi neka struktura ako ima za to ali onda ne verujem da moze i po
+    //putniku i po vozacu da se pretrazuje
 
-/**
- * GET /api/rides/:id
- * Dobija vožnju po ID-u
- */
-router.get('/:id', getRideById);
 
-/**
- * POST /api/rides
- * Kreira novu vožnju (naru?ivanje taksija)
- * Body: { passengerId, pickupLatitude, pickupLongitude, destinationLatitude?, destinationLongitude? }
- */
-router.post('/', createRide);
+rideRouter.post('/', rc.createRide);
 
-/**
- * PATCH /api/rides/:id/accept
- * Voza? prihvata vožnju
- * Body: { driverId }
- */
-router.patch('/:id/accept', acceptRide);
+rideRouter.get('/', rc.getAllRides);
 
-/**
- * PATCH /api/rides/:id/start
- * Zapo?inje vožnju
- */
-router.patch('/:id/start', startRide);
+rideRouter.get('/:id', rc.getRideById);
 
-/**
- * PATCH /api/rides/:id/complete
- * Završava vožnju
- */
-router.patch('/:id/complete', completeRide);
 
-/**
- * DELETE /api/rides/:id
- * Otkazuje vožnju
- * Body: { reason? }
- */
-router.delete('/:id', cancelRide);
+rideRouter.put('/:id/accept', rc.acceptRide);
+rideRouter.put('/:id/start', rc.startRide);
+rideRouter.put('/:id/complete', rc.completeRide);
+rideRouter.put('/:id/cancel', rc.cancelRide);
 
-export default router;
+rideRouter.delete('/:id', rc.deleteRide);
+
+export default rideRouter;
