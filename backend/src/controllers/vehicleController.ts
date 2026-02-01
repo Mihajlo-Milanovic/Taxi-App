@@ -65,11 +65,6 @@ export const getVehicleById = async (req: Request, res: Response, next: NextFunc
     }
 };
 
-/**
- * Kreira novo vozilo
- * POST /api/vehicles
- * Body: { driverId, number, registration, latitude, longitude }
- */
 export const createVehicle = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { driverId, number, registration, latitude, longitude } = req.body;
@@ -117,11 +112,7 @@ export const createVehicle = async (req: Request, res: Response, next: NextFunct
     }
 };
 
-/**
- * Aurira lokaciju vozila
- * PUT /api/vehicles/:id/location
- * Body: { latitude, longitude }
- */
+
 export const updateVehicleLocation = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
@@ -157,11 +148,7 @@ export const updateVehicleLocation = async (req: Request, res: Response, next: N
     }
 };
 
-/**
- * Aurira dostupnost vozila
- * PATCH /api/vehicles/:id/availability
- * Body: { isAvailable: "offline" | "available" | "occupied" }
- */
+
 export const updateVehicleAvailability = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
@@ -197,10 +184,7 @@ export const updateVehicleAvailability = async (req: Request, res: Response, nex
     }
 };
 
-/**
- * Pronalazi vozila u blizini odre?ene lokacije
- * GET /api/vehicles/nearby?latitude=44.8&longitude=20.5&radius=5
- */
+
 export const getNearbyVehicles = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { latitude, longitude, radius = '5' } = req.query;
@@ -245,10 +229,7 @@ export const getNearbyVehicles = async (req: Request, res: Response, next: NextF
     }
 };
 
-/**
- * Dobija vozila odre?enog voza?a
- * GET /api/vehicles/driver/:driverId
- */
+
 export const getVehiclesByDriver = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { driverId } = req.params;
@@ -275,10 +256,7 @@ export const getVehiclesByDriver = async (req: Request, res: Response, next: Nex
     }
 };
 
-/**
-* Briše vozilo
-* DELETE /:id
-*/
+
 export const deleteVehicle = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;

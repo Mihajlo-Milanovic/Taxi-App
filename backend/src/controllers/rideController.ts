@@ -1,9 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-/**
- * Dobija sve vožnje
- * GET /api/rides
- */
+
 export const getAllRides = async (req: Request, res: Response, next: NextFunction) => {
     try {
         // TODO: Redis logika
@@ -22,10 +19,7 @@ export const getAllRides = async (req: Request, res: Response, next: NextFunctio
     }
 };
 
-/**
- * Dobija vožnju po ID-u
- * GET /api/rides/:id
- */
+
 export const getRideById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
@@ -57,11 +51,7 @@ export const getRideById = async (req: Request, res: Response, next: NextFunctio
     }
 };
 
-/**
- * Kreira novu vožnju (putnik naručuje taksi)
- * POST /api/rides
- * Body: { passengerId, startLatitude, startLongitude, destinationLatitude?, destinationLongitude?, price? }
- */
+
 export const createRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {
@@ -150,10 +140,7 @@ export const createRide = async (req: Request, res: Response, next: NextFunction
     }
 };
 
-/**
- * Vozač prihvata vožnju
- * PATCH /api/rides/:id/accept
- */
+
 export const acceptRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
@@ -189,10 +176,7 @@ export const acceptRide = async (req: Request, res: Response, next: NextFunction
     }
 };
 
-/**
- * Započinje vožnju (vozač je stigao do putnika)
- * PATCH /api/rides/:id/start
- */
+
 export const startRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
@@ -228,10 +212,7 @@ export const startRide = async (req: Request, res: Response, next: NextFunction)
     }
 };
 
-/**
- * Završava vožnju
- * PATCH /api/rides/:id/complete
- */
+
 export const completeRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
@@ -281,11 +262,7 @@ export const completeRide = async (req: Request, res: Response, next: NextFuncti
     }
 };
 
-/**
- * Otkazuje vožnju
- * PATCH /api/rides/:id/cancel
- * Body: { reason? }
- */
+
 export const cancelRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
@@ -341,10 +318,7 @@ export const cancelRide = async (req: Request, res: Response, next: NextFunction
     }
 };
 
-/**
- * Dobija aktivnu vožnju putnika
- * GET /api/rides/passenger/:passengerId/active
- */
+
 export const getActiveRideByPassenger = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { passengerId } = req.params;
@@ -373,10 +347,7 @@ export const getActiveRideByPassenger = async (req: Request, res: Response, next
     }
 };
 
-/**
- * Dobija aktivnu vožnju vozača
- * GET /api/rides/driver/:driverId/active
- */
+
 export const getActiveRideByDriver = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { driverId } = req.params;
@@ -405,10 +376,7 @@ export const getActiveRideByDriver = async (req: Request, res: Response, next: N
     }
 };
 
-/**
- * Dobija aktivnu vožnju vozila
- * GET /api/rides/vehicle/:vehicleId/active
- */
+
 export const getActiveRideByVehicle = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { vehicleId } = req.params;
@@ -437,10 +405,7 @@ export const getActiveRideByVehicle = async (req: Request, res: Response, next: 
     }
 };
 
-/**
- * Briše vožnju
- * DELETE /api/rides/:id
- */
+
 export const deleteRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
