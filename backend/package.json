@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "app.ts",
   "scripts": {
-    "dev": "docker compose -f docker-compose.dev.yml up",
+    "build": "docker build -t taxi-backend-img .",
+    "dev": "docker compose -f docker-compose.dev.yml up --build --watch",
     "dev:down": "docker compose down",
-    "build": "tsc",
     "start:dev": "tsx watch src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

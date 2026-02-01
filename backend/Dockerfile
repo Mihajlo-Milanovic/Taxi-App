@@ -1,8 +1,8 @@
-FROM node:20-alpine
+FROM node:lts-alpine3.23
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package*.json .
 
 RUN npm install
 
@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 5000
 
-CMD ["npm", "run", "dev"]
+ENTRYPOINT ["npm", "run", "start:dev"]
