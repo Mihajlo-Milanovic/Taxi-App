@@ -17,4 +17,6 @@ vehicleRouter.put('/:id/location', vc.updateVehicleLocation);
 
 vehicleRouter.put('/:id/availability', vc.updateVehicleAvailability);
 
+vehicleRouter.delete('/vehicles/:id', vc.deleteVehicle);
+
 export default vehicleRouter;

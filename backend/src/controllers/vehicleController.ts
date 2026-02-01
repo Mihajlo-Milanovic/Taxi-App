@@ -268,3 +268,39 @@ export const getVehiclesByDriver = async (req: Request, res: Response, next: Nex
         next(error);
     }
 };
+
+/**
+* Briše vozilo
+* DELETE /api/vehicles/:id
+*/
+export const deleteVehicle = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+
+        // TODO: Dodati Redis logiku za brisanje vozila
+        // const vehicle = await redis.hgetall(`vehicle:${id}`);
+        // 
+        // if (!vehicle || Object.keys(vehicle).length === 0) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         error: "Vozilo nije prona?eno"
+        //     });
+        // }
+        // 
+        // // Ukloni vozilo iz geo indexa
+        // await redis.zrem('vehicles:available', id);
+        // 
+        // // Obriši vozilo
+        // await redis.del(`vehicle:${id}`);
+
+        res.status(200).json({
+            success: true,
+            message: `Vozilo sa ID: ${id} uspešno obrisano`,
+            data: {
+                id
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
