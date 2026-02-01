@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  redis-db:
+    image: redis
+    container_name: redis-db
+    volumes:
+      - redis-data:/data
+    networks:
+      - redis-net
+    restart: unless-stopped
+
+  backend:
+    build: .
+    container_name: express-app-prod
+    ports:
+      - "3000:3000"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      NODE_ENV: production
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+
+networks:
+  app-network:
+    driver: bridge

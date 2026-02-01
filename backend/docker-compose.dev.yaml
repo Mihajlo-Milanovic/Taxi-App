@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  redis-db:
+    image: redis
+    container_name: redis-db
+    volumes:
+      - redis-data:/data
+    networks:
+      - redis-net
+
+  backend-dev:
+    image: node:18
+    container_name: backend-dev
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run start-dev
+    ports:
+      - "5000:5000"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      NODE_ENV: development
+    depends_on:
+      - redis-db
+    networks:
+      - redis-net
+
+volumes:
+  redis-data:
+
+networks:
+  redis-net:
+    driver: bridge
