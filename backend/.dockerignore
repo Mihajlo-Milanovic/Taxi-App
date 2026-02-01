@@ -1,0 +1,21 @@
+# Dependencies
+node_modules
+
+# Git & metadata
+.git
+.gitignore
+
+# Environment & secrets
+.env
+.env.*
+
+# Tests & docs
+tests
+docs
+
+# Logs
+*.log
+
+# Editor junk
+.vscode
+.idea

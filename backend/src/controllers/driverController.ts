@@ -18,7 +18,7 @@ export const getAllDrivers = async (req: Request, res: Response, next: NextFunct
             }
         });
     } catch (error) {
-        next(error); // Šalje grešku u errorHandler middleware
+        next(error); // ï¿½alje greï¿½ku u errorHandler middleware
     }
 };
 
@@ -79,7 +79,7 @@ export const createDriver = async (req: Request, res: Response, next: NextFuncti
         // });
         res.status(201).json({
             success: true,
-            message: "Voza? uspešno kreiran",
+            message: "Voza? uspeï¿½no kreiran",
             data: {
                 driver: {
                     // id: driverId,
@@ -93,7 +93,7 @@ export const createDriver = async (req: Request, res: Response, next: NextFuncti
 };
 
 /**
- * Ažurira podatke voza?a
+ * Aï¿½urira podatke voza?a
  * PUT /api/drivers/:id
  * Body: { name }
  */
@@ -114,7 +114,7 @@ export const updateDriver = async (req: Request, res: Response, next: NextFuncti
 
         res.status(200).json({
             success: true,
-            message: "Podaci voza?a ažurirani",
+            message: "Podaci voza?a aï¿½urirani",
             data: {
                 id,
                 name
@@ -126,7 +126,7 @@ export const updateDriver = async (req: Request, res: Response, next: NextFuncti
 };
 
 /**
- * Briše voza?a
+ * Briï¿½e voza?a
  * DELETE /api/drivers/:id
  */
 export const deleteDriver = async (req: Request, res: Response, next: NextFunction) => {
@@ -144,7 +144,7 @@ export const deleteDriver = async (req: Request, res: Response, next: NextFuncti
 
         res.status(200).json({
             success: true,
-            message: "Voza? uspešno obrisan",
+            message: "Voza? uspeï¿½no obrisan",
             data: { id }
         });
     } catch (error) {

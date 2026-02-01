@@ -18,7 +18,6 @@ app.use('/passengers', passengerRoutes);
 app.use('/vehicles', vehicleRoutes);
 app.use('/rides', rideRoutes);
 
-// Root ruta
 app.get("/", (req: express.Request, res: express.Response) => {
     res.json({
         message: "Taxi app is running...",
