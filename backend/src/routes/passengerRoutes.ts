@@ -12,4 +12,7 @@ passengerRouter.get('/:id', pc.getPassengerById);
 
 passengerRouter.put('/:id', pc.updatePassenger);
 
+passengerRouter.delete('/:id', pc.deletePassenger);
+
+
 export default passengerRouter;

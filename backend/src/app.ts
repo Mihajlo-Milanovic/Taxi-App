@@ -4,6 +4,7 @@ import { errorHandler } from "./middlewares/errorHandler";
 
 import driverRoutes from "./routes/driverRoutes";
 import passengerRoutes from "./routes/passengerRoutes";
+import vehicleRoutes from "./routes/vehicleRoutes";
 import rideRoutes from "./routes/rideRoutes";
 
 const app: Application = express();
@@ -14,6 +15,7 @@ app.use(errorHandler);
 
 app.use('/drivers', driverRoutes);
 app.use('/passengers', passengerRoutes);
+app.use('/vehicles', vehicleRoutes);
 app.use('/rides', rideRoutes);
 
 // Root ruta
@@ -23,6 +25,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
         endpoints: [
             "drivers",
             "passengers",
+            "vehicles",
             "rides"
         ]
     });

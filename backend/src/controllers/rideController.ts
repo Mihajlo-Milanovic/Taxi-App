@@ -1,16 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
-import {constants} from "node:http2";
 
 /**
- * Dobija sve vo�nje
+ * Dobija sve vožnje
  * GET /api/rides
  */
 export const getAllRides = async (req: Request, res: Response, next: NextFunction) => {
     try {
         // TODO: Redis logika
+        // const rides = await redis.keys('ride:*');
+        // const rideData = await Promise.all(rides.map(r => redis.hgetall(r)));
+
         res.status(200).json({
             success: true,
-            message: "Lista svih vo�nji",
+            message: "Lista svih vožnji",
             data: {
                 rides: []
             }
@@ -21,22 +23,32 @@ export const getAllRides = async (req: Request, res: Response, next: NextFunctio
 };
 
 /**
- * Dobija vo�nju po ID-u
+ * Dobija vožnju po ID-u
  * GET /api/rides/:id
  */
 export const getRideById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
+        // TODO: Redis logika
+        // const ride = await redis.hgetall(`ride:${id}`);
+        // if (!ride || Object.keys(ride).length === 0) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         error: "Vožnja nije pronađena"
+        //     });
+        // }
+
         res.status(200).json({
             success: true,
-            message: `Vo�nja sa ID: ${id}`,
+            message: `Vožnja sa ID: ${id}`,
             data: {
                 ride: {
                     id,
                     passengerId: "passenger123",
                     driverId: "driver456",
-                    status: "active"
+                    vehicleId: "vehicle789",
+                    status: "requested" // requested, accepted, in_progress, finished, cancelled
                 }
             }
         });
@@ -46,46 +58,90 @@ export const getRideById = async (req: Request, res: Response, next: NextFunctio
 };
 
 /**
- * Kreira novu vo�nju (putnik naru?uje taksi)
+ * Kreira novu vožnju (putnik naručuje taksi)
  * POST /api/rides
- * Body: { passengerId, pickupLatitude, pickupLongitude, destinationLatitude, destinationLongitude }
+ * Body: { passengerId, startLatitude, startLongitude, destinationLatitude?, destinationLongitude?, price? }
  */
 export const createRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {
             passengerId,
-            pickupLatitude,
-            pickupLongitude,
+            startLatitude,
+            startLongitude,
             destinationLatitude,
-            destinationLongitude
+            destinationLongitude,
+            price
         } = req.body;
 
         // Validacija
-        if (!passengerId || !pickupLatitude || !pickupLongitude) {
+        if (!passengerId || !startLatitude || !startLongitude) {
             return res.status(400).json({
                 success: false,
-                error: "Nedostaju obavezna polja"
+                error: "Nedostaju obavezna polja: passengerId, startLatitude, startLongitude"
             });
         }
 
         // TODO: Redis logika
-        // 1. Na?i najbli�eg dostupnog voza?a (GEORADIUS)
-        // 2. Kreiraj vo�nju u Redis-u
-        // 3. Dodeli voza?a vo�nji
-        // 4. Postavi status voza?a na "unavailable"
+        // 1. Nađi najbližu dostupnu vozilo (GEORADIUS)
+        // const nearbyVehicles = await redis.georadius(
+        //     'vehicles:available',
+        //     Number(startLongitude),
+        //     Number(startLatitude),
+        //     5, // radius u km
+        //     'km',
+        //     'WITHDIST',
+        //     'ASC',
+        //     'COUNT', 1
+        // );
+        // 
+        // if (!nearbyVehicles || nearbyVehicles.length === 0) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         error: "Nema dostupnih vozila u blizini"
+        //     });
+        // }
+        // 
+        // const [vehicleId] = nearbyVehicles[0];
+        // const vehicle = await redis.hgetall(`vehicle:${vehicleId}`);
+        // 
+        // 2. Kreiraj vožnju u Redis-u
+        // const rideId = uuidv4();
+        // await redis.hset(`ride:${rideId}`, {
+        //     id: rideId,
+        //     passengerId,
+        //     driverId: vehicle.driverId,
+        //     vehicleId,
+        //     status: 'requested',
+        //     startLatitude,
+        //     startLongitude,
+        //     destinationLatitude: destinationLatitude || '',
+        //     destinationLongitude: destinationLongitude || '',
+        //     price: price || 0
+        // });
+        // 
+        // 3. Postavi vozilo na "occupied"
+        // await redis.hset(`vehicle:${vehicleId}`, 'isAvailable', 'occupied');
+        // await redis.zrem('vehicles:available', vehicleId);
+        // 
+        // 4. Dodaj mapiranje za brzo pretraživanje
+        // await redis.set(`passenger:${passengerId}:active-ride`, rideId);
+        // await redis.set(`driver:${vehicle.driverId}:active-ride`, rideId);
+        // await redis.set(`vehicle:${vehicleId}:active-ride`, rideId);
 
         res.status(201).json({
             success: true,
-            message: "Vo�nja uspe�no kreirana",
+            message: "Vožnja uspešno kreirana",
             data: {
                 ride: {
                     // id: rideId,
                     passengerId,
-                    // driverId: nearestDriver.id,
-                    status: "pending",
-                    pickup: { latitude: pickupLatitude, longitude: pickupLongitude },
-                    destination: destinationLatitude ?
-                        { latitude: destinationLatitude, longitude: destinationLongitude } : null
+                    // driverId: vehicle.driverId,
+                    // vehicleId,
+                    status: "requested",
+                    start: { latitude: startLatitude, longitude: startLongitude },
+                    destination: destinationLatitude && destinationLongitude ?
+                        { latitude: destinationLatitude, longitude: destinationLongitude } : null,
+                    price: price || 0
                 }
             }
         });
@@ -95,33 +151,36 @@ export const createRide = async (req: Request, res: Response, next: NextFunction
 };
 
 /**
- * Voza? prihvata vo�nju
+ * Vozač prihvata vožnju
  * PATCH /api/rides/:id/accept
- * Body: { driverId }
  */
 export const acceptRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
-        const { driverId } = req.body;
-
-        if (!driverId) {
-            return res.status(400).json({
-                success: false,
-                error: "Nedostaje driverId"
-            });
-        }
 
         // TODO: Redis logika
-        // 1. Proveri da li vo�nja postoji
-        // 2. A�uriraj status na "accepted"
-        // 3. Dodeli voza?a
+        // const ride = await redis.hgetall(`ride:${id}`);
+        // if (!ride || Object.keys(ride).length === 0) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         error: "Vožnja nije pronađena"
+        //     });
+        // }
+        // 
+        // if (ride.status !== 'requested') {
+        //     return res.status(400).json({
+        //         success: false,
+        //         error: "Vožnja je već prihvaćena ili u toku"
+        //     });
+        // }
+        // 
+        // await redis.hset(`ride:${id}`, 'status', 'accepted');
 
         res.status(200).json({
             success: true,
-            message: "Vo�nja prihva?ena",
+            message: "Vožnja prihvaćena",
             data: {
                 rideId: id,
-                driverId,
                 status: "accepted"
             }
         });
@@ -131,18 +190,34 @@ export const acceptRide = async (req: Request, res: Response, next: NextFunction
 };
 
 /**
- * Zapo?inje vo�nju (voza? je stigao do putnika)
+ * Započinje vožnju (vozač je stigao do putnika)
  * PATCH /api/rides/:id/start
  */
 export const startRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
-        // TODO: Redis logika - a�uriraj status na "in_progress"
+        // TODO: Redis logika
+        // const ride = await redis.hgetall(`ride:${id}`);
+        // if (!ride || Object.keys(ride).length === 0) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         error: "Vožnja nije pronađena"
+        //     });
+        // }
+        // 
+        // if (ride.status !== 'accepted') {
+        //     return res.status(400).json({
+        //         success: false,
+        //         error: "Vožnja mora biti prihvaćena pre početka"
+        //     });
+        // }
+        // 
+        // await redis.hset(`ride:${id}`, 'status', 'in_progress');
 
         res.status(200).json({
             success: true,
-            message: "Vo�nja po?ela",
+            message: "Vožnja počela",
             data: {
                 rideId: id,
                 status: "in_progress"
@@ -154,7 +229,7 @@ export const startRide = async (req: Request, res: Response, next: NextFunction)
 };
 
 /**
- * Zavr�ava vo�nju
+ * Završava vožnju
  * PATCH /api/rides/:id/complete
  */
 export const completeRide = async (req: Request, res: Response, next: NextFunction) => {
@@ -162,15 +237,43 @@ export const completeRide = async (req: Request, res: Response, next: NextFuncti
         const { id } = req.params;
 
         // TODO: Redis logika
-        // 1. A�uriraj status na "completed"
-        // 2. Postavi voza?a ponovo kao "available"
+        // const ride = await redis.hgetall(`ride:${id}`);
+        // if (!ride || Object.keys(ride).length === 0) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         error: "Vožnja nije pronađena"
+        //     });
+        // }
+        // 
+        // if (ride.status !== 'in_progress') {
+        //     return res.status(400).json({
+        //         success: false,
+        //         error: "Vožnja mora biti u toku da bi se završila"
+        //     });
+        // }
+        // 
+        // 1. Ažuriraj status vožnje
+        // await redis.hset(`ride:${id}`, 'status', 'finished');
+        // 
+        // 2. Postavi vozilo ponovo kao "available"
+        // const vehicleId = ride.vehicleId;
+        // await redis.hset(`vehicle:${vehicleId}`, 'isAvailable', 'available');
+        // 
+        // 3. Vrati vozilo u geo index
+        // const vehicle = await redis.hgetall(`vehicle:${vehicleId}`);
+        // await redis.geoadd('vehicles:available', vehicle.longitude, vehicle.latitude, vehicleId);
+        // 
+        // 4. Ukloni mapiranja aktivnih vožnji
+        // await redis.del(`passenger:${ride.passengerId}:active-ride`);
+        // await redis.del(`driver:${ride.driverId}:active-ride`);
+        // await redis.del(`vehicle:${vehicleId}:active-ride`);
 
         res.status(200).json({
             success: true,
-            message: "Vo�nja zavr�ena",
+            message: "Vožnja završena",
             data: {
                 rideId: id,
-                status: "completed"
+                status: "finished"
             }
         });
     } catch (error) {
@@ -179,9 +282,9 @@ export const completeRide = async (req: Request, res: Response, next: NextFuncti
 };
 
 /**
- * Otkazuje vo�nju
- * DELETE /api/rides/:id
- * Body: { reason }
+ * Otkazuje vožnju
+ * PATCH /api/rides/:id/cancel
+ * Body: { reason? }
  */
 export const cancelRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -189,12 +292,44 @@ export const cancelRide = async (req: Request, res: Response, next: NextFunction
         const { reason } = req.body;
 
         // TODO: Redis logika
-        // 1. A�uriraj status na "cancelled"
-        // 2. Postavi voza?a ponovo kao "available" ako je bio dodeljen
+        // const ride = await redis.hgetall(`ride:${id}`);
+        // if (!ride || Object.keys(ride).length === 0) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         error: "Vožnja nije pronađena"
+        //     });
+        // }
+        // 
+        // if (ride.status === 'finished' || ride.status === 'cancelled') {
+        //     return res.status(400).json({
+        //         success: false,
+        //         error: "Vožnja je već završena ili otkazana"
+        //     });
+        // }
+        // 
+        // 1. Ažuriraj status vožnje
+        // await redis.hset(`ride:${id}`, 'status', 'cancelled');
+        // if (reason) {
+        //     await redis.hset(`ride:${id}`, 'cancelReason', reason);
+        // }
+        // 
+        // 2. Postavi vozilo ponovo kao "available" ako je bilo dodeljeno
+        // if (ride.vehicleId) {
+        //     const vehicleId = ride.vehicleId;
+        //     await redis.hset(`vehicle:${vehicleId}`, 'isAvailable', 'available');
+        //     
+        //     const vehicle = await redis.hgetall(`vehicle:${vehicleId}`);
+        //     await redis.geoadd('vehicles:available', vehicle.longitude, vehicle.latitude, vehicleId);
+        //     
+        //     await redis.del(`driver:${ride.driverId}:active-ride`);
+        //     await redis.del(`vehicle:${vehicleId}:active-ride`);
+        // }
+        // 
+        // await redis.del(`passenger:${ride.passengerId}:active-ride`);
 
         res.status(200).json({
             success: true,
-            message: "Vo�nja otkazana",
+            message: "Vožnja otkazana",
             data: {
                 rideId: id,
                 status: "cancelled",
@@ -207,20 +342,30 @@ export const cancelRide = async (req: Request, res: Response, next: NextFunction
 };
 
 /**
- * Dobija aktivnu vo�nju putnika
+ * Dobija aktivnu vožnju putnika
  * GET /api/rides/passenger/:passengerId/active
  */
 export const getActiveRideByPassenger = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { passengerId } = req.params;
 
-        // TODO: Redis logika - prona?i aktivnu vo�nju za putnika
+        // TODO: Redis logika - koristi mapirani ključ za brzo pretraživanje
+        // const rideId = await redis.get(`passenger:${passengerId}:active-ride`);
+        // if (!rideId) {
+        //     return res.status(200).json({
+        //         success: true,
+        //         message: "Nema aktivne vožnje",
+        //         data: { ride: null }
+        //     });
+        // }
+        // 
+        // const ride = await redis.hgetall(`ride:${rideId}`);
 
         res.status(200).json({
             success: true,
-            message: "Aktivna vo�nja putnika",
+            message: "Aktivna vožnja putnika",
             data: {
-                ride: null // ili vo�nja ako postoji
+                ride: null // ili vožnja ako postoji
             }
         });
     } catch (error) {
@@ -229,20 +374,30 @@ export const getActiveRideByPassenger = async (req: Request, res: Response, next
 };
 
 /**
- * Dobija aktivnu vo�nju voza?a
+ * Dobija aktivnu vožnju vozača
  * GET /api/rides/driver/:driverId/active
  */
 export const getActiveRideByDriver = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { driverId } = req.params;
 
-        // TODO: Redis logika - prona?i aktivnu vo�nju za voza?a
+        // TODO: Redis logika - koristi mapirani ključ za brzo pretraživanje
+        // const rideId = await redis.get(`driver:${driverId}:active-ride`);
+        // if (!rideId) {
+        //     return res.status(200).json({
+        //         success: true,
+        //         message: "Nema aktivne vožnje",
+        //         data: { ride: null }
+        //     });
+        // }
+        // 
+        // const ride = await redis.hgetall(`ride:${rideId}`);
 
         res.status(200).json({
             success: true,
-            message: "Aktivna vo�nja voza?a",
+            message: "Aktivna vožnja vozača",
             data: {
-                ride: null // ili vo�nja ako postoji
+                ride: null // ili vožnja ako postoji
             }
         });
     } catch (error) {
@@ -250,7 +405,71 @@ export const getActiveRideByDriver = async (req: Request, res: Response, next: N
     }
 };
 
-export const deleteRide = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * Dobija aktivnu vožnju vozila
+ * GET /api/rides/vehicle/:vehicleId/active
+ */
+export const getActiveRideByVehicle = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { vehicleId } = req.params;
 
-    res.status(constants.HTTP_STATUS_NOT_IMPLEMENTED).end();
-}
+        // TODO: Redis logika - koristi mapirani ključ za brzo pretraživanje
+        // const rideId = await redis.get(`vehicle:${vehicleId}:active-ride`);
+        // if (!rideId) {
+        //     return res.status(200).json({
+        //         success: true,
+        //         message: "Nema aktivne vožnje",
+        //         data: { ride: null }
+        //     });
+        // }
+        // 
+        // const ride = await redis.hgetall(`ride:${rideId}`);
+
+        res.status(200).json({
+            success: true,
+            message: "Aktivna vožnja vozila",
+            data: {
+                ride: null // ili vožnja ako postoji
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Briše vožnju
+ * DELETE /api/rides/:id
+ */
+export const deleteRide = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+
+        // TODO: Redis logika
+        // const ride = await redis.hgetall(`ride:${id}`);
+        // if (!ride || Object.keys(ride).length === 0) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         error: "Vožnja nije pronađena"
+        //     });
+        // }
+        // 
+        // // Obriši sve povezane ključeve
+        // await redis.del(`ride:${id}`);
+        // await redis.del(`passenger:${ride.passengerId}:active-ride`);
+        // if (ride.driverId) {
+        //     await redis.del(`driver:${ride.driverId}:active-ride`);
+        // }
+        // if (ride.vehicleId) {
+        //     await redis.del(`vehicle:${ride.vehicleId}:active-ride`);
+        // }
+
+        res.status(200).json({
+            success: true,
+            message: "Vožnja obrisana",
+            data: { id }
+        });
+    } catch (error) {
+        next(error);
+    }
+};

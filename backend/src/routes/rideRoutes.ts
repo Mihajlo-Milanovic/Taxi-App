@@ -7,16 +7,20 @@ rideRouter.get('/passenger/:passengerId/active', rc.getActiveRideByPassenger);
 
 rideRouter.get('/driver/:driverId/active', rc.getActiveRideByDriver);
 
+rideRouter.get('/vehicle/:vehicleId/active', rc.getActiveRideByVehicle);
+
+
     //TODO: Za ove gore dve ne znam moze li redis to da ostvari
     //moralo bi da se koristi neka struktura ako ima za to ali onda ne verujem da moze i po
     //putniku i po vozacu da se pretrazuje
 
 
-rideRouter.post('/', rc.createRide);
-
 rideRouter.get('/', rc.getAllRides);
 
 rideRouter.get('/:id', rc.getRideById);
+
+rideRouter.post('/', rc.createRide);
+
 
 
 rideRouter.put('/:id/accept', rc.acceptRide);
