@@ -11,7 +11,6 @@ const app: Application = express();
 
 app.use(express.json());
 app.use(logger);
-app.use(errorHandler);
 
 app.use('/drivers', driverRoutes);
 app.use('/passengers', passengerRoutes);
@@ -29,5 +28,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
         ]
     });
 });
+
+app.use(errorHandler);
 
 export default app;

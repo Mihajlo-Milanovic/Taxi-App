@@ -1,105 +1,60 @@
 import { Request, Response, NextFunction } from 'express';
+import * as driverService from '../services/driverService';
 
-/**
- * Dobija sve dostupne voza?e
- * GET /api/drivers
- */
 export const getAllDrivers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // TODO: Dodati Redis logiku za preuzimanje voza?a
-        // const drivers = await redis.keys('driver:*');
-        // const driverData = await Promise.all(drivers.map(d => redis.hgetall(d)));
+        const drivers = await driverService.getAllDrivers();
 
-        res.status(200).json({
-            success: true,
-            message: "Lista svih voza?a",
-            data: {
-                drivers: [] // Ovde ?e biti voza?i iz Redis-a
-            }
-        });
-    } catch (error) {
-        next(error); // �alje gre�ku u errorHandler middleware
-    }
-};
-
-/**
- * Dobija voza?a po ID-u
- * GET /api/drivers/:id
- */
-export const getDriverById = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { id } = req.params; // ? Parametar iz URL putanje
-
-        // TODO: Dodati Redis logiku
-        // const driver = await redis.hgetall(`driver:${id}`);
-        // if (!driver || Object.keys(driver).length === 0) {
-        //     return res.status(404).json({
-        //         success: false,
-        //         error: "Voza? nije prona?en"
-        //     });
-        // }
-
-        res.status(200).json({
-            success: true,
-            message: `Voza? sa ID: ${id}`,
-            data: {
-                driver: {
-                    id,
-                    name: "Primer"
-                }
-            }
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-/**
- * Kreira novog voza?a
- * POST /api/drivers
- * Body: { name }
- */
-export const createDriver = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { name } = req.body; // ? Parametri iz tela zahteva
-
-        // Validacija
-        if (!name) {
-            return res.status(400).json({
-                success: false,
-                error: "Nedostaje obavezno polje: name"
+        if (drivers.length === 0) {
+            return res.status(200).json({
+                success: true,
+                message: "Nema vozača u bazi",
+                data: { drivers: [] }
             });
         }
 
-        // TODO: Dodati Redis logiku za kreiranje voza?a
-        // const driverId = uuidv4();
-        // await redis.hset(`driver:${driverId}`, {
-        //     id: driverId,
-        //     name
-        // });
-        res.status(201).json({
+        res.status(200).json({
             success: true,
-            message: "Voza? uspe�no kreiran",
-            data: {
-                driver: {
-                    // id: driverId,
-                    name
-                }
-            }
+            message: "Lista svih vozača",
+            data: { drivers }
         });
     } catch (error) {
         next(error);
     }
 };
 
-/**
- * A�urira podatke voza?a
- * PUT /api/drivers/:id
- * Body: { name }
- */
-export const updateDriver = async (req: Request, res: Response, next: NextFunction) => {
+export const getDriverById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { id } = req.params;
+        const id = req.params.id as string;
+
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                error: "ID vozača je obavezan"
+            });
+        }
+
+        const driver = await driverService.getDriverById(id);
+
+        if (!driver) {
+            return res.status(404).json({
+                success: false,
+                error: "Vozač nije pronađen"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: `Vozač sa ID: ${id}`,
+            data: { driver }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const createDriver = async (req: Request, res: Response, next: NextFunction) => {
+    try {
         const { name } = req.body;
 
         if (!name) {
@@ -109,46 +64,82 @@ export const updateDriver = async (req: Request, res: Response, next: NextFuncti
             });
         }
 
-        // TODO: Dodati Redis logiku
-        // await redis.hset(`driver:${id}`, 'name', name);
+        const driver = await driverService.createDriver(name);
 
-        res.status(200).json({
+        res.status(201).json({
             success: true,
-            message: "Podaci voza?a a�urirani",
-            data: {
-                id,
-                name
-            }
+            message: "Vozač uspešno kreiran",
+            data: { driver }
         });
     } catch (error) {
         next(error);
     }
 };
 
-/**
- * Bri�e voza?a
- * DELETE /api/drivers/:id
- */
-export const deleteDriver = async (req: Request, res: Response, next: NextFunction) => {
+export const updateDriver = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { id } = req.params;
+        const id = req.params.id as string;
+        const { name } = req.body;
 
-        // TODO: Dodati Redis logiku
-        // const result = await redis.del(`driver:${id}`);
-        // if (result === 0) {
-        //     return res.status(404).json({
-        //         success: false,
-        //         error: "Voza? nije prona?en"
-        //     });
-        // }
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                error: "ID vozača je obavezan"
+            });
+        }
+
+        if (!name) {
+            return res.status(400).json({
+                success: false,
+                error: "Nedostaje obavezno polje: name"
+            });
+        }
+
+        const driver = await driverService.updateDriver(id, name);
+
+        if (!driver) {
+            return res.status(404).json({
+                success: false,
+                error: "Vozač nije pronađen"
+            });
+        }
 
         res.status(200).json({
             success: true,
-            message: "Voza? uspe�no obrisan",
+            message: "Podaci vozača ažurirani",
+            data: { driver }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deleteDriver = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const id = req.params.id as string;
+
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                error: "ID vozača je obavezan"
+            });
+        }
+
+        const deleted = await driverService.deleteDriver(id);
+
+        if (!deleted) {
+            return res.status(404).json({
+                success: false,
+                error: "Vozač nije pronađen"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Vozač uspešno obrisan",
             data: { id }
         });
     } catch (error) {
         next(error);
     }
 };
-

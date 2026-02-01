@@ -1,20 +1,29 @@
 import { Request, Response, NextFunction } from 'express';
+import { redisClient } from '../config/db';
+import { v4 as uuidv4 } from 'uuid';
 
-/**
- * Dobija sva vozila
- * GET /api/vehicles
- */
+
 export const getAllVehicles = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // TODO: Dodati Redis logiku za preuzimanje svih vozila
-        // const vehicles = await redis.keys('vehicle:*');
-        // const vehicleData = await Promise.all(vehicles.map(v => redis.hgetall(v)));
+        const keys = await redisClient.keys('vehicle:*');
+
+        if (keys.length === 0) {
+            return res.status(200).json({
+                success: true,
+                message: "Nema vozila u bazi",
+                data: { vehicles: [] }
+            });
+        }
+
+        const vehicles = await Promise.all(
+            keys.map(key => redisClient.hGetAll(key))
+        );
 
         res.status(200).json({
             success: true,
             message: "Lista svih vozila",
             data: {
-                vehicles: [] // Ovde ?e biti vozila iz Redis-a
+                vehicles: [] 
             }
         });
     } catch (error) {
@@ -22,10 +31,7 @@ export const getAllVehicles = async (req: Request, res: Response, next: NextFunc
     }
 };
 
-/**
- * Dobija vozilo po ID-u
- * GET /api/vehicles/:id
- */
+
 export const getVehicleById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
@@ -271,7 +277,7 @@ export const getVehiclesByDriver = async (req: Request, res: Response, next: Nex
 
 /**
 * Briše vozilo
-* DELETE /api/vehicles/:id
+* DELETE /:id
 */
 export const deleteVehicle = async (req: Request, res: Response, next: NextFunction) => {
     try {
