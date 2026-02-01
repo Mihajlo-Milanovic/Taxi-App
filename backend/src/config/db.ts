@@ -22,8 +22,8 @@ export const testConnection= async () => {
     console.log(value);
 
     await redisClient.hSet('testUser', {
-        name: 'John',
-        surname: 'Smith',
+        name: 'Petar',
+        surname: 'Petrovic',
         company: 'Redis',
         age: 29
     })

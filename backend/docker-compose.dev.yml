@@ -1,3 +1,4 @@
+name: taxi-backend-dev
 services:
   redis-db:
     image: redis
@@ -7,34 +8,28 @@ services:
     networks:
       - redis-net
 
-  backend-dev:
-    image: node:18
-    container_name: backend-dev
+  taxi-backend-dev:
+    image: taxi-backend-img
+    container_name: taxi-backend-dev
     working_dir: /app
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: sh -c "npm install && npm run start:dev"
     ports:
       - "5000:5000"
     environment:
-      REDIS_HOST: redis-db
+      REDIS_HOST: redis
       REDIS_PORT: 6379
       NODE_ENV: development
     depends_on:
       - redis-db
     networks:
       - redis-net
-#    develop:
-#      watch:
-#        - action: sync
-#          path: ./src
-#          target: ./app/src
-#          ignore:
-#            - node_modules/
-##        - action: sync
-##          path: ./package.json
-##          target: ./package.json
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /app/src
+        - action: sync+restart
+          path: ./.
+          target: /app/.
 
 volumes:
   redis-data:
