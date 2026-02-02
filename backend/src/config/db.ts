@@ -17,20 +17,20 @@ export const disconnectFromRedisDB = async () => {
 
 export const testConnection= async () => {
 
-    await redisClient.set('test', 'WORKS!');
-    const value = await redisClient.get('test');
-    console.log(value);
-
-    await redisClient.hSet('testUser', {
-        name: 'Petar',
-        surname: 'Petrovic',
-        company: 'Redis',
-        age: 29
-    })
-
-    const testUser = await redisClient.hGetAll('testUser');
-    console.log(JSON.stringify(testUser, null, 2));
-
-    console.log(await redisClient.PING());
+    // await redisClient.set('test', 'WORKS!');
+    // const value = await redisClient.get('test');
+    // console.log(value);
+    //
+    // await redisClient.hSet('testUser', {
+    //     name: 'Petar',
+    //     surname: 'Petrovic',
+    //     company: 'Redis',
+    //     age: 29
+    // })
+    //
+    // const testUser = await redisClient.hGetAll('testUser');
+    // console.log(JSON.stringify(testUser, null, 2));
+    console.debug("PING")
+    console.debug(await redisClient.PING());
 }
 

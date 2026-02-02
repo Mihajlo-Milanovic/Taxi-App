@@ -3,15 +3,15 @@ import * as vc from '../controllers/vehicleController';
 
 const vehicleRouter = express.Router();
 
-vehicleRouter.get('/nearby', vc.getNearbyVehicles);
-
-vehicleRouter.get('/driver/:driverId', vc.getVehiclesByDriver);
-
-vehicleRouter.get('/', vc.getAllVehicles);
+vehicleRouter.post('/', vc.createVehicle);
 
 vehicleRouter.get('/:id', vc.getVehicleById);
 
-vehicleRouter.post('/', vc.createVehicle);
+// vehicleRouter.get('/', vc.getAllVehicles);
+
+vehicleRouter.get('/nearby/lat/:lat/lng/:lng/radius/:radius', vc.getNearbyVehicles);
+
+vehicleRouter.get('/:id/driver', vc.getDriverForVehicle);
 
 vehicleRouter.put('/:id/location', vc.updateVehicleLocation);
 
