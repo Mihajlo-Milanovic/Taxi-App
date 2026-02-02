@@ -11,7 +11,7 @@ export interface IVehicle {
     availability: Availability;
 }
 
-export interface IRedisHashVehicle {
+export interface IRedisVehicle {
     id: string;
     driverId: string;
     make: string;

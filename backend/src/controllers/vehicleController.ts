@@ -68,28 +68,28 @@ export const getNearbyVehicles = async (req: Request, res: Response, next: NextF
 
 export const getDriverForVehicle = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { id } = req.params;
 
-        const result = await vehicleService.getDriverForVehicle()
+        //TODO: Validation
+        const id = req.params.id as string;
 
-        res.status(200).json({
-            success: true,
-            message: `Vozila voza?a ${driverId}`,
-            data: {
-                vehicles: [] // Lista vozila
-            }
-        });
+        const result = await vehicleService.getDriverForVehicle(id);
+
+        if (result.id != null)
+            res.status(200).json(result).end();
+        else
+            res.status(404).send("Driver information unavailable.").end();
+
     } catch (error) {
         next(error);
     }
 };
 
-
-
 export const updateVehicleLocation = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { id } = req.params;
-        const { latitude, longitude } = req.body;
+
+        //TODO: Validation
+        const id = req.params.id as string;
+        const { latitude, longitude, availability } = req.body;
 
         if (!latitude || !longitude) {
             return res.status(400).json({
@@ -98,24 +98,12 @@ export const updateVehicleLocation = async (req: Request, res: Response, next: N
             });
         }
 
-        // TODO: Dodati Redis logiku
-        // await redis.hset(`vehicle:${id}`, { latitude, longitude });
-        // 
-        // // A�uriraj poziciju u geo indexu
-        // const status = await redis.hget(`vehicle:${id}`, 'isAvailable');
-        // if (status === 'available') {
-        //     await redis.geoadd('vehicles:available', longitude, latitude, id);
-        // }
+        const result = await vehicleService.updateVehicleLocation(id, +latitude, +longitude, +availability);
 
-        res.status(200).json({
-            success: true,
-            message: "Lokacija vozila a�urirana",
-            data: {
-                id,
-                latitude,
-                longitude
-            }
-        });
+        if (result)
+            res.status(201).send("Vehicle location updated successfully.").end();
+        else
+            res.status(404).send("Vehicle not found.").end();
     } catch (error) {
         next(error);
     }
@@ -123,68 +111,35 @@ export const updateVehicleLocation = async (req: Request, res: Response, next: N
 
 export const updateVehicleAvailability = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { id } = req.params;
-        const { isAvailable } = req.body;
 
-        const validStatuses = ['offline', 'available', 'occupied'];
-        if (!validStatuses.includes(isAvailable)) {
-            return res.status(400).json({
-                success: false,
-                error: "isAvailable mora biti: offline, available ili occupied"
-            });
-        }
+        //TODO: Validation
+        const id = req.params.id as string;
+        const availability = req.params.availability as string;
 
-        // TODO: Dodati Redis logiku
-        // await redis.hset(`vehicle:${id}`, 'isAvailable', isAvailable);
-        // 
-        // if (isAvailable === 'available') {
-        //     // Dodaj u geo index ako je dostupno
-        //     const vehicle = await redis.hgetall(`vehicle:${id}`);
-        //     await redis.geoadd('vehicles:available', vehicle.longitude, vehicle.latitude, id);
-        // } else {
-        //     // Ukloni iz geo indexa ako nije dostupno
-        //     await redis.zrem('vehicles:available', id);
-        // }
+       const result = await vehicleService.updateVehicleAvailability(id, +availability);
+        if (result)
+            return res.status(201).send("Vehicle availability updated successfully.").end();
+        else
+            return res.status(404).send("Vehicle not found.").end();
 
-        res.status(200).json({
-            success: true,
-            message: `Vozilo je sada ${isAvailable}`,
-            data: { id, isAvailable }
-        });
     } catch (error) {
         next(error);
     }
 };
 
-
-
 export const deleteVehicle = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { id } = req.params;
 
-        // TODO: Dodati Redis logiku za brisanje vozila
-        // const vehicle = await redis.hgetall(`vehicle:${id}`);
-        // 
-        // if (!vehicle || Object.keys(vehicle).length === 0) {
-        //     return res.status(404).json({
-        //         success: false,
-        //         error: "Vozilo nije prona?eno"
-        //     });
-        // }
-        // 
-        // // Ukloni vozilo iz geo indexa
-        // await redis.zrem('vehicles:available', id);
-        // 
-        // // Obri�i vozilo
-        // await redis.del(`vehicle:${id}`);
+        //TODO: Validation
+        const id = req.params.id as string;
 
-        res.status(200).json({
-            success: true,
-            message: `Vozilo sa ID: ${id} uspe�no obrisano`,
-            data: {
-                id
-            }
-        });
+        const result = await vehicleService.deleteVehicle(id);
+
+        if (result)
+            res.status(200).send("Vehicle deleted successfully.").end();
+        else
+            res.status(404).send("Vehicle not found.").end();
+
     } catch (error) {
         next(error);
     }

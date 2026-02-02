@@ -15,7 +15,7 @@ vehicleRouter.get('/:id/driver', vc.getDriverForVehicle);
 
 vehicleRouter.put('/:id/location', vc.updateVehicleLocation);
 
-vehicleRouter.put('/:id/availability', vc.updateVehicleAvailability);
+vehicleRouter.put('/:id/availability/:availability', vc.updateVehicleAvailability);
 
 vehicleRouter.delete('/:id', vc.deleteVehicle);
 

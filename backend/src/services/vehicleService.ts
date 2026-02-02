@@ -1,9 +1,10 @@
-import {IRedisHashVehicle, IVehicle} from "../data/Interfaces/IVehicle";
+import {IRedisVehicle, IVehicle} from "../data/Interfaces/IVehicle";
+import {IDriver, IRedisDriver} from "../data/Interfaces/IDriver";
 import {Availability} from "../data/Enumerations/availabilaty";
 import {redisClient} from '../config/db';
 import {v4 as uuid} from 'uuid';
 import {GEO_REPLY_WITH} from "redis";
-import {IDriver} from "./driverService";
+import {ILocation} from "../data/Interfaces/ILocation";
 
 
 export const createVehicle = async (vehicle: IVehicle): Promise<string> => {
@@ -37,10 +38,9 @@ export const createVehicle = async (vehicle: IVehicle): Promise<string> => {
         return "";
 }
 
-const getRedisVehicle = async (id: string): Promise<IRedisHashVehicle> => {
-    return await redisClient.hGetAll(`vehicles:${id}`, ) as IRedisHashVehicle;
+const getRedisVehicle = async (id: string): Promise<IRedisVehicle> => {
+    return await redisClient.hGetAll(`vehicles:${id}`, ) as IRedisVehicle;
 }
-
 
 export const getVehicleById = async (id: string): Promise<IVehicle | null> => {
 
@@ -51,7 +51,7 @@ export const getVehicleById = async (id: string): Promise<IVehicle | null> => {
     const rvl = await redisClient.geoPos('vehicles:' + rv.availability, id) as unknown as {latitude: string; longitude: string} | null;
     return {
         ...rv,
-        availability: parseInt(rv.availability),
+        availability: +rv.availability,
         location: rvl
     };
 }
@@ -90,6 +90,82 @@ export const getNearbyVehicles = async (lat: string, lng:string, radius:number):
 
 export const getDriverForVehicle = async (id: string): Promise<IDriver> => {
 
-    // return await redisClient.hGetAll(`driver:${id}`, ) as IDriver;
+    return await redisClient.hGetAll(`driver:${id}`, ) as IRedisDriver;
 }
 
+export const getVehicleLocation = async (id: string, availability: Availability): Promise<ILocation | null> => {
+    const res =  await redisClient.geoPos(`vehicles:${availability}`, id);
+
+    const r = res.at(0);
+    if (r !== undefined)
+        return r;
+    return null;
+}
+
+const getVehicleAvailability = async (id: string): Promise<Availability | null> => {
+    const res = await redisClient.hGet(`vehicles:${id}`, 'availability');
+    if (res)
+        return +res;
+    return null;
+}
+
+export const updateVehicleLocation = async (id: string, lat: number, lng: number, availability: Availability): Promise<boolean> => {
+
+    await deleteLocation(id, availability);
+    const result = await redisClient.geoAdd(`vehicles:${availability}`,
+        {
+            member: id,
+            longitude: lng,
+            latitude: lat,
+        },
+        {
+            CH: true,
+            //     XX: true,
+        }
+    );
+
+    return result > 0;
+}
+
+const deleteLocation = async (id: string, availability: Availability): Promise<boolean> => {
+    return (await redisClient.zRem(`vehicles:${availability}`, id)) > 0;
+}
+
+export const updateVehicleAvailability = async (id: string, availability: Availability): Promise<boolean> => {
+
+    const oldAvailability = await getVehicleAvailability(id);
+
+    if (oldAvailability != null){
+        if(oldAvailability == availability)
+            return true;
+
+        const oldLocation = await getVehicleLocation(id, oldAvailability);
+        if (oldLocation) {
+            if(await updateVehicleLocation(id, +oldLocation.latitude, +oldLocation.longitude, availability)) {
+                if (await deleteLocation(id, oldAvailability)) {
+                    await redisClient.hSet(`vehicles:${id}`, {availability: availability});
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+export const deleteVehicle = async (id: string): Promise<boolean> => {
+    const a = await getVehicleAvailability(id);
+    if(a != null) {
+        await deleteLocation(id, a)
+        await redisClient.hDel(`vehicles:${id}`,
+            [
+                "id",
+                "driverId",
+                "make",
+                "model",
+                "registration",
+                "availability"
+            ]);
+    }
+
+    return (await getRedisVehicle(id)).id == null;
+}

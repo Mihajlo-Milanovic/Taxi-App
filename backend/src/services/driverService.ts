@@ -1,10 +1,6 @@
 import { redisClient } from '../config/db';
 import { v4 as uuidv4 } from 'uuid';
-
-export interface IDriver {
-    id: string;
-    name: string;
-}
+import {IDriver} from "../data/Interfaces/IDriver";
 
 export async function getAllDrivers(): Promise<IDriver[]> {
     const keys = await redisClient.keys('driver:*');
