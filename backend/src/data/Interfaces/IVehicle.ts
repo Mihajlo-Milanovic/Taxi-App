@@ -1,4 +1,4 @@
-import {Availability} from "../Enumerations/availabilaty";
+import {Availability} from "../Enumerations/Availabilaty";
 import {ILocation} from "./ILocation";
 
 export interface IVehicle {

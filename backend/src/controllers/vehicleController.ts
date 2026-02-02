@@ -55,9 +55,9 @@ export const getNearbyVehicles = async (req: Request, res: Response, next: NextF
     try {
 
         //TODO: Validation
-        const locRad = req.params as { lat: string, lng: string, radius: string };
+        const data = req.params as { lat: string, lng: string, radius: string, maxCount: string };
 
-       const result = await vehicleService.getNearbyVehicles(locRad.lat, locRad.lng, +locRad.radius);
+       const result = await vehicleService.getNearbyVehicles(data.lat, data.lng, +data.radius, +data.maxCount);
 
        return res.status(200).json(result).end();
 

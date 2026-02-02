@@ -1,6 +1,6 @@
 import {IRedisVehicle, IVehicle} from "../data/Interfaces/IVehicle";
 import {IDriver, IRedisDriver} from "../data/Interfaces/IDriver";
-import {Availability} from "../data/Enumerations/availabilaty";
+import {Availability} from "../data/Enumerations/Availabilaty";
 import {redisClient} from '../config/db';
 import {v4 as uuid} from 'uuid';
 import {GEO_REPLY_WITH} from "redis";
@@ -61,14 +61,14 @@ export const getVehicleById = async (id: string): Promise<IVehicle | null> => {
 //     return await redisClient.hGetAll("vehicles:") as unknown as Array<IVehicle>;
 // }
 
-export const getNearbyVehicles = async (lat: string, lng:string, radius:number): Promise<Array<IVehicle>> => {
+export const getNearbyVehicles = async (lat: string, lng:string, radius:number, maxCount: number): Promise<Array<IVehicle>> => {
 
     const nearby = await redisClient.geoSearchWith(
             `vehicles:${Availability.available}`,
             { latitude: lat, longitude: lng },
             { radius: radius, unit: "km" },
             [ GEO_REPLY_WITH.COORDINATES ],
-            { COUNT: 10,  }
+            { COUNT: maxCount,  }
     );
 
     const result: Array<IVehicle> = [];
@@ -111,7 +111,9 @@ const getVehicleAvailability = async (id: string): Promise<Availability | null> 
 
 export const updateVehicleLocation = async (id: string, lat: number, lng: number, availability: Availability): Promise<boolean> => {
 
-    await deleteLocation(id, availability);
+    if(await getVehicleAvailability(id) != availability){
+        await deleteLocation(id, availability);
+    }
     const result = await redisClient.geoAdd(`vehicles:${availability}`,
         {
             member: id,

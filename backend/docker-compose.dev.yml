@@ -14,9 +14,11 @@ services:
     working_dir: /app
     ports:
       - "5000:5000"
+      - "3000:3000"
     environment:
       REDIS_HOST: redis-db
       REDIS_PORT: 6379
+      SWAGGER_PORT: 3000
       NODE_ENV: development
     depends_on:
       - redis-db

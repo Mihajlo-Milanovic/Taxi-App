@@ -2,7 +2,7 @@ import { redisClient } from '../config/db';
 import { v4 as uuidv4 } from 'uuid';
 
 import { IRide, CreateRideData } from "../data/Interfaces/IRide";
-import { Availability } from "../data/Enumerations/availabilaty";
+import { Availability } from "../data/Enumerations/Availabilaty";
 
 
 export async function getAllRides(): Promise<IRide[]> {
@@ -131,7 +131,7 @@ export async function acceptRide(id: string): Promise<IRide | null> {
     }
 
     if (ride.status !== 'requested') {
-        throw new Error('Vožnja je ve? prihva?ena ili u toku');
+        throw new Error('Voï¿½nja je ve? prihva?ena ili u toku');
     }
 
     await redisClient.hSet(`ride:${id}`, 'status', 'accepted');
@@ -147,7 +147,7 @@ export async function startRide(id: string): Promise<IRide | null> {
     }
 
     if (ride.status !== 'accepted') {
-        throw new Error('Vožnja mora biti prihva?ena pre po?etka');
+        throw new Error('Voï¿½nja mora biti prihva?ena pre po?etka');
     }
 
     await redisClient.hSet(`ride:${id}`, 'status', 'in_progress');
@@ -163,14 +163,14 @@ export async function completeRide(id: string): Promise<IRide | null> {
     }
 
     if (ride.status !== 'in_progress') {
-        throw new Error('Vožnja mora biti u toku da bi se završila');
+        throw new Error('Voï¿½nja mora biti u toku da bi se zavrï¿½ila');
     }
 
     await redisClient.hSet(`ride:${id}`, 'status', 'finished');
 
     const vehicleId = ride.vehicleId;
     if (!vehicleId) {
-        throw new Error('Vožnja nema dodeljeno vozilo');
+        throw new Error('Voï¿½nja nema dodeljeno vozilo');
     }
 
     const location = await redisClient.geoPos('vehicles:2', vehicleId);
@@ -205,7 +205,7 @@ export async function cancelRide(id: string, reason?: string): Promise<IRide | n
     }
 
     if (ride.status === 'finished' || ride.status === 'cancelled') {
-        throw new Error('Vožnja je ve? završena ili otkazana');
+        throw new Error('Voï¿½nja je ve? zavrï¿½ena ili otkazana');
     }
 
     await redisClient.hSet(`ride:${id}`, 'status', 'cancelled');
