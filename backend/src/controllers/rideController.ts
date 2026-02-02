@@ -64,22 +64,30 @@ export const createRide = async (req: Request, res: Response, next: NextFunction
             price
         } = req.body;
 
-        // Validacija
-        if (!passengerId || !startLatitude || !startLongitude) {
+        if (!passengerId || startLatitude === undefined || startLongitude === undefined) {
             return res.status(400).json({
                 success: false,
                 error: "Nedostaju obavezna polja: passengerId, startLatitude, startLongitude"
             });
         }
 
-        const ride = await rideService.createRide({
+        const rideData: rideService.CreateRideData = {
             passengerId,
             startLatitude: Number(startLatitude),
-            startLongitude: Number(startLongitude),
-            destinationLatitude: destinationLatitude ? Number(destinationLatitude) : undefined,
-            destinationLongitude: destinationLongitude ? Number(destinationLongitude) : undefined,
-            price: price ? Number(price) : undefined
-        });
+            startLongitude: Number(startLongitude)
+        };
+
+        if (destinationLatitude !== undefined) {
+            rideData.destinationLatitude = Number(destinationLatitude);
+        }
+        if (destinationLongitude !== undefined) {
+            rideData.destinationLongitude = Number(destinationLongitude);
+        }
+        if (price !== undefined) {
+            rideData.price = Number(price);
+        }
+
+        const ride = await rideService.createRide(rideData);
 
         if (!ride) {
             return res.status(404).json({
@@ -123,8 +131,8 @@ export const acceptRide = async (req: Request, res: Response, next: NextFunction
             message: "Vožnja prihvaćena",
             data: { ride }
         });
-    } catch (error: any) {
-        if (error.message === 'Vožnja je već prihvaćena ili u toku') {
+    } catch (error: unknown) {
+        if (error instanceof Error && error.message === 'Vožnja je već prihvaćena ili u toku') {
             return res.status(400).json({
                 success: false,
                 error: error.message
@@ -159,8 +167,8 @@ export const startRide = async (req: Request, res: Response, next: NextFunction)
             message: "Vožnja počela",
             data: { ride }
         });
-    } catch (error: any) {
-        if (error.message === 'Vožnja mora biti prihvaćena pre početka') {
+    } catch (error: unknown) {
+        if (error instanceof Error && error.message === 'Vožnja mora biti prihvaćena pre početka') {
             return res.status(400).json({
                 success: false,
                 error: error.message
@@ -195,12 +203,15 @@ export const completeRide = async (req: Request, res: Response, next: NextFuncti
             message: "Vožnja završena",
             data: { ride }
         });
-    } catch (error: any) {
-        if (error.message === 'Vožnja mora biti u toku da bi se završila') {
-            return res.status(400).json({
-                success: false,
-                error: error.message
-            });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            if (error.message === 'Vožnja mora biti u toku da bi se završila' ||
+                error.message === 'Vožnja nema dodeljeno vozilo') {
+                return res.status(400).json({
+                    success: false,
+                    error: error.message
+                });
+            }
         }
         next(error);
     }
@@ -232,8 +243,8 @@ export const cancelRide = async (req: Request, res: Response, next: NextFunction
             message: "Vožnja otkazana",
             data: { ride }
         });
-    } catch (error: any) {
-        if (error.message === 'Vožnja je već završena ili otkazana') {
+    } catch (error: unknown) {
+        if (error instanceof Error && error.message === 'Vožnja je već završena ili otkazana') {
             return res.status(400).json({
                 success: false,
                 error: error.message

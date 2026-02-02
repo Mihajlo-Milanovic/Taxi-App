@@ -29,32 +29,38 @@ export async function getDriverById(id: string): Promise<IDriver | null> {
     return driver as unknown as IDriver;
 }
 
-export async function createDriver(name: string): Promise<IDriver> {
+export async function createDriver(firstName: string, lastName: string): Promise<IDriver> {
     const driverId = uuidv4();
 
     await redisClient.hSet(`driver:${driverId}`, {
         id: driverId,
-        name
+        firstName,
+        lastName
     });
 
     return {
         id: driverId,
-        name
+        firstName,
+        lastName
     };
+
 }
 
-export async function updateDriver(id: string, name: string): Promise<IDriver | null> {
+export async function updateDriver(id: string, firstName: string, lastName: string): Promise<IDriver | null> {
     const exists = await redisClient.exists(`driver:${id}`);
 
     if (!exists) {
         return null;
     }
 
-    await redisClient.hSet(`driver:${id}`, 'name', name);
+    await redisClient.hSet(`driver:${id}`, 'firstName', firstName);
+    await redisClient.hSet(`driver:${id}`, 'lastName', lastName);
+
 
     return {
         id,
-        name
+        firstName,
+        lastName
     };
 }
 

@@ -1,16 +1,8 @@
 import { redisClient } from '../config/db';
 import { v4 as uuidv4 } from 'uuid';
+import { IPassenger, UpdatePassengerData } from "../data/Interfaces/IPassenger";
 
-export interface IPassenger {
-    id: string;
-    name: string;
-    telephone: string;
-}
 
-export interface UpdatePassengerData {
-    name?: string;
-    telephone?: string;
-}
 
 export async function getAllPassengers(): Promise<IPassenger[]> {
     const keys = await redisClient.keys('passenger:*');

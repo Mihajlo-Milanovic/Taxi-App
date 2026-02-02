@@ -55,16 +55,17 @@ export const getDriverById = async (req: Request, res: Response, next: NextFunct
 
 export const createDriver = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { name } = req.body;
 
-        if (!name) {
+        const { firstName, lastName } = req.body;
+
+        if (!firstName || !lastName) {
             return res.status(400).json({
                 success: false,
-                error: "Nedostaje obavezno polje: name"
+                error: "Nedostaju obavezna polja: firstName, lastName"
             });
         }
 
-        const driver = await driverService.createDriver(name);
+        const driver = await driverService.createDriver( firstName, lastName );
 
         res.status(201).json({
             success: true,
@@ -79,7 +80,7 @@ export const createDriver = async (req: Request, res: Response, next: NextFuncti
 export const updateDriver = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const id = req.params.id as string;
-        const { name } = req.body;
+        const { firstName, lastName } = req.body;
 
         if (!id) {
             return res.status(400).json({
@@ -88,14 +89,14 @@ export const updateDriver = async (req: Request, res: Response, next: NextFuncti
             });
         }
 
-        if (!name) {
+        if (!firstName || !lastName) { 
             return res.status(400).json({
                 success: false,
-                error: "Nedostaje obavezno polje: name"
+                error: "Nedostaju obavezna polja: firstName, lastName"
             });
         }
 
-        const driver = await driverService.updateDriver(id, name);
+        const driver = await driverService.updateDriver(id, firstName, lastName);
 
         if (!driver) {
             return res.status(404).json({
