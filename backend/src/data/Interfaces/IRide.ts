@@ -1,22 +1,31 @@
+import {ILocation} from "./ILocation";
+import {RideStatus} from "../Enumerations/RideStatus";
+
 export interface IRide {
     id: string;
     passengerId: string;
-    driverId?: string;
-    vehicleId?: string;
-    status: 'requested' | 'accepted' | 'in_progress' | 'finished' | 'cancelled';
-    startLatitude: string;
-    startLongitude: string;
-    destinationLatitude?: string;
-    destinationLongitude?: string;
-    price?: string;
-    cancelReason?: string;
+    driverId: string;
+    vehicleId: string;
+    status: RideStatus;
+    startLocation: ILocation;
+    destination?: ILocation;
+    rideTimespan?: number;
+    price?: number;
+    // cancelReason?: string;
 }
 
-export interface CreateRideData {
+export interface IRedisRide {
+    id: string;
     passengerId: string;
-    startLatitude: number;
-    startLongitude: number;
-    destinationLatitude?: number;
-    destinationLongitude?: number;
-    price?: number;
+    driverId: string;
+    vehicleId: string;
+    status: string;
+    startLocationLat: string;
+    startLocationLng: string;
+    destinationLat?: string;
+    destinationLng?: string;
+    startingTime: string;
+    completionTime: string;
+    price: string;
+    [key: string]: string;
 }

@@ -1,6 +1,6 @@
 import {IRedisVehicle, IVehicle} from "../data/Interfaces/IVehicle";
 import {IDriver, IRedisDriver} from "../data/Interfaces/IDriver";
-import {Availability} from "../data/Enumerations/Availabilaty";
+import {VehicleAvailability} from "../data/Enumerations/VehicleAvailability";
 import {redisClient} from '../config/db';
 import {v4 as uuid} from 'uuid';
 import {GEO_REPLY_WITH} from "redis";
@@ -64,7 +64,7 @@ export const getVehicleById = async (id: string): Promise<IVehicle | null> => {
 export const getNearbyVehicles = async (lat: string, lng:string, radius:number, maxCount: number): Promise<Array<IVehicle>> => {
 
     const nearby = await redisClient.geoSearchWith(
-            `vehicles:${Availability.available}`,
+            `vehicles:${VehicleAvailability.available}`,
             { latitude: lat, longitude: lng },
             { radius: radius, unit: "km" },
             [ GEO_REPLY_WITH.COORDINATES ],
@@ -93,7 +93,7 @@ export const getDriverForVehicle = async (id: string): Promise<IDriver> => {
     return await redisClient.hGetAll(`driver:${id}`, ) as IRedisDriver;
 }
 
-export const getVehicleLocation = async (id: string, availability: Availability): Promise<ILocation | null> => {
+export const getVehicleLocation = async (id: string, availability: VehicleAvailability): Promise<ILocation | null> => {
     const res =  await redisClient.geoPos(`vehicles:${availability}`, id);
 
     const r = res.at(0);
@@ -102,14 +102,14 @@ export const getVehicleLocation = async (id: string, availability: Availability)
     return null;
 }
 
-const getVehicleAvailability = async (id: string): Promise<Availability | null> => {
+const getVehicleAvailability = async (id: string): Promise<VehicleAvailability | null> => {
     const res = await redisClient.hGet(`vehicles:${id}`, 'availability');
     if (res)
         return +res;
     return null;
 }
 
-export const updateVehicleLocation = async (id: string, lat: number, lng: number, availability: Availability): Promise<boolean> => {
+export const updateVehicleLocation = async (id: string, lat: number, lng: number, availability: VehicleAvailability): Promise<boolean> => {
 
     if(await getVehicleAvailability(id) != availability){
         await deleteLocation(id, availability);
@@ -129,11 +129,11 @@ export const updateVehicleLocation = async (id: string, lat: number, lng: number
     return result > 0;
 }
 
-const deleteLocation = async (id: string, availability: Availability): Promise<boolean> => {
+const deleteLocation = async (id: string, availability: VehicleAvailability): Promise<boolean> => {
     return (await redisClient.zRem(`vehicles:${availability}`, id)) > 0;
 }
 
-export const updateVehicleAvailability = async (id: string, availability: Availability): Promise<boolean> => {
+export const updateVehicleAvailability = async (id: string, availability: VehicleAvailability): Promise<boolean> => {
 
     const oldAvailability = await getVehicleAvailability(id);
 

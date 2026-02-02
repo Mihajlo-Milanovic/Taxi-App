@@ -1,5 +1,59 @@
 import { Request, Response, NextFunction } from 'express';
 import * as rideService from '../services/rideService';
+import {IRide} from "../data/Interfaces/IRide";
+
+
+export const createRide = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const ride: IRide = req.body;
+
+        if (
+            ride === undefined ||
+            ride.passengerId === undefined ||
+            ride.driverId === undefined ||
+            ride.vehicleId === undefined ||
+            ride.status === undefined ||
+            ride.startLocation === undefined ||
+            ride.destination === undefined ||
+            ride.price === undefined
+        ) {
+            return res.status(400).send("Invalid request").end();
+        }
+
+        // const rideData: rideService.CreateRideData = {
+        //     ride.passengerId,
+        //     startLatitude: Number(startLatitude),
+        //     startLongitude: Number(startLongitude)
+        // };
+        //
+        // if (destinationLatitude !== undefined) {
+        //     rideData.destinationLatitude = Number(destinationLatitude);
+        // }
+        // if (destinationLongitude !== undefined) {
+        //     rideData.destinationLongitude = Number(destinationLongitude);
+        // }
+        // if (price !== undefined) {
+        //     rideData.price = Number(price);
+        // }
+
+        // const result = await rideService.createRide(rideData);
+
+        // if (!result) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         error: "Nema dostupnih vozila u blizini"
+        //     });
+        // }
+        //
+        // res.status(201).json({
+        //     success: true,
+        //     message: "Vožnja uspešno kreirana",
+        //     data: { result }
+        // });
+    } catch (error) {
+        next(error);
+    }
+};
 
 export const getAllRides = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -53,58 +107,7 @@ export const getRideById = async (req: Request, res: Response, next: NextFunctio
     }
 };
 
-export const createRide = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const {
-            passengerId,
-            startLatitude,
-            startLongitude,
-            destinationLatitude,
-            destinationLongitude,
-            price
-        } = req.body;
 
-        if (!passengerId || startLatitude === undefined || startLongitude === undefined) {
-            return res.status(400).json({
-                success: false,
-                error: "Nedostaju obavezna polja: passengerId, startLatitude, startLongitude"
-            });
-        }
-
-        const rideData: rideService.CreateRideData = {
-            passengerId,
-            startLatitude: Number(startLatitude),
-            startLongitude: Number(startLongitude)
-        };
-
-        if (destinationLatitude !== undefined) {
-            rideData.destinationLatitude = Number(destinationLatitude);
-        }
-        if (destinationLongitude !== undefined) {
-            rideData.destinationLongitude = Number(destinationLongitude);
-        }
-        if (price !== undefined) {
-            rideData.price = Number(price);
-        }
-
-        const ride = await rideService.createRide(rideData);
-
-        if (!ride) {
-            return res.status(404).json({
-                success: false,
-                error: "Nema dostupnih vozila u blizini"
-            });
-        }
-
-        res.status(201).json({
-            success: true,
-            message: "Vožnja uspešno kreirana",
-            data: { ride }
-        });
-    } catch (error) {
-        next(error);
-    }
-};
 
 export const acceptRide = async (req: Request, res: Response, next: NextFunction) => {
     try {

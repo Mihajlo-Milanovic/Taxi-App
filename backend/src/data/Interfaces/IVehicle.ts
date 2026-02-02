@@ -1,4 +1,4 @@
-import {Availability} from "../Enumerations/Availabilaty";
+import {VehicleAvailability} from "../Enumerations/VehicleAvailability";
 import {ILocation} from "./ILocation";
 
 export interface IVehicle {
@@ -8,7 +8,7 @@ export interface IVehicle {
     model: string;
     registration: string;
     location: ILocation | null;
-    availability: Availability;
+    availability: VehicleAvailability;
 }
 
 export interface IRedisVehicle {

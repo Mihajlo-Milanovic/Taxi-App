@@ -1,9 +1,113 @@
-import { redisClient } from '../config/db';
-import { v4 as uuidv4 } from 'uuid';
+import {redisClient} from '../config/db';
+import {v4 as uuid} from 'uuid';
+import * as vehicleService from './vehicleService';
+import {IRedisRide, IRide} from "../data/Interfaces/IRide";
+import {VehicleAvailability} from "../data/Enumerations/VehicleAvailability";
+import {RideStatus} from "../data/Enumerations/RideStatus";
+import {IVehicle} from "../data/Interfaces/IVehicle";
+import {ILocation} from "../data/Interfaces/ILocation";
 
-import { IRide, CreateRideData } from "../data/Interfaces/IRide";
-import { Availability } from "../data/Enumerations/Availabilaty";
 
+const getRideStatus = async (id: string): Promise<RideStatus> => {
+
+    const status = await redisClient.hGet(`ride:${id}`, 'status');
+
+    if(status === null)
+        return RideStatus.Cancelled
+    else
+        return +status;
+}
+
+const setRideStatus = async (id: string, status: RideStatus): Promise<void> => {
+
+    await redisClient.hSet(`ride:${id}`, { status: status});
+}
+
+export async function createRide(ride: IRide): Promise<IRide | null> {
+    //
+    // ride.id = uuid();
+    // ride.price = calculatePrice(ride);
+    //
+    // const n = await redisClient.hSet(`rides:${ride.id}`, {
+    //     id: ride.id,
+    //     passengerId: ride.passengerId,
+    //     status: RideStatus.Requested,
+    //     startLocationLat: ride.startLocation.latitude,
+    //     startLocationLng: ride.startLocation.longitude,
+    //     price: ride.price
+    // });
+    //
+    // if(n != 6)
+    //     return null;
+    //
+    // let nearbyVehicles: Array<IVehicle> = [];
+    //
+    // while ((await getRideStatus(ride.id)) == RideStatus.Requested) {
+    //
+    //     nearbyVehicles = await vehicleService.getNearbyVehicles(
+    //         ride.startLocation.latitude,
+    //         ride.startLocation.longitude,
+    //         20,
+    //         1
+    //     );
+    //     if(nearbyVehicles.length == 0){
+    //         await sleep(30000);
+    //     }
+    //     else{
+    //
+    //         const v = nearbyVehicles[0];
+    //         if (v){
+    //             ride.vehicleId = v.id;
+    //             ride.driverId = v.driverId;
+    //             ride.status = RideStatus.Accepted;
+    //
+    //             const n = await redisClient.hSet(`rides:${ride.id}`, {
+    //                 vehicleId: ride.vehicleId,
+    //                 driverId: ride.driverId,
+    //                 status: ride.status,
+    //             });
+    //
+    //             if(n != 3){
+    //                 await setRideStatus(ride.id, RideStatus.Requested);
+    //             }
+    //         }
+    //     }
+    // }
+    //
+    // //TODO:nastavi
+    //
+    // return ride;
+    return null;
+}
+
+export async function getRideById(id: string): Promise<IRide | null> {
+
+    // const r = await redisClient.hGetAll(`rides:${id}`) as IRedisRide;
+    //
+    // if (!r || Object.keys(r).length === 0) {
+    //     return null;
+    // }
+
+    // const ride: IRide = {
+    //     ...r,
+    //     price: null,
+    //     startLocation: { latitude: 0, longitude: 0};
+    //     destination: null;
+    // }
+    // if(r.price !== undefined)
+    //     ride.price = r.price;
+    // else
+    //     ride.price = null;
+    //
+    // return ride;
+    //     price: parseInt(ride.availability),
+    //     location: {
+    //         latitude: `${nv.coordinates?.latitude}`,
+    //         longitude: `${nv.coordinates?.longitude}`,
+    //     }
+    // };
+    return null;
+}
 
 export async function getAllRides(): Promise<IRide[]> {
     const keys = await redisClient.keys('ride:*');
@@ -22,106 +126,9 @@ export async function getAllRides(): Promise<IRide[]> {
     return rides;
 }
 
-export async function getRideById(id: string): Promise<IRide | null> {
-    const ride = await redisClient.hGetAll(`ride:${id}`);
 
-    if (!ride || Object.keys(ride).length === 0) {
-        return null;
-    }
 
-    return ride as unknown as IRide;
-}
 
-export async function createRide(data: CreateRideData): Promise<IRide | null> {
-    const { passengerId, startLatitude, startLongitude, destinationLatitude, destinationLongitude, price } = data;
-
-    const nearbyVehicles = await redisClient.geoSearch(
-        'vehicles:1',
-        {
-            longitude: startLongitude,
-            latitude: startLatitude
-        },
-        {
-            radius: 5,
-            unit: 'km'
-        },
-        {
-            SORT: 'ASC',
-            COUNT: 1
-        }
-    );
-
-    if (!nearbyVehicles || nearbyVehicles.length === 0) {
-        return null; 
-    }
-
-    const vehicleId = nearbyVehicles[0] as string;
-    const vehicle = await redisClient.hGetAll(`vehicles:${vehicleId}`);
-
-    if (!vehicle || Object.keys(vehicle).length === 0) {
-        return null;
-    }
-
-    const rideId = uuidv4();
-    const driverId = vehicle.driverId || '';
-
-    await redisClient.hSet(`ride:${rideId}`, {
-        id: rideId,
-        passengerId,
-        driverId: driverId,
-        vehicleId,
-        status: 'requested',
-        startLatitude: startLatitude.toString(),
-        startLongitude: startLongitude.toString(),
-        destinationLatitude: destinationLatitude?.toString() || '',
-        destinationLongitude: destinationLongitude?.toString() || '',
-        price: price?.toString() || '0'
-    });
-
- 
-    const location = await redisClient.geoPos('vehicles:1', vehicleId);
-
-    await redisClient.hSet(`vehicles:${vehicleId}`, 'availability', Availability.occupied.toString());
-    await redisClient.zRem('vehicles:1', vehicleId);
-
-    if (location && location[0]) {
-        await redisClient.geoAdd('vehicles:2', {
-            longitude: location[0].longitude,
-            latitude: location[0].latitude,
-            member: vehicleId
-        });
-    }
-
-    await redisClient.set(`passenger:${passengerId}:active-ride`, rideId);
-    if (driverId) {
-        await redisClient.set(`driver:${driverId}:active-ride`, rideId);
-    }
-    await redisClient.set(`vehicles:${vehicleId}:active-ride`, rideId);
-
-    const result: IRide = {
-        id: rideId,
-        passengerId,
-        vehicleId,
-        status: 'requested',
-        startLatitude: startLatitude.toString(),
-        startLongitude: startLongitude.toString()
-    };
-
-    if (driverId) {
-        result.driverId = driverId;
-    }
-    if (destinationLatitude !== undefined) {
-        result.destinationLatitude = destinationLatitude.toString();
-    }
-    if (destinationLongitude !== undefined) {
-        result.destinationLongitude = destinationLongitude.toString();
-    }
-    if (price !== undefined) {
-        result.price = price.toString();
-    }
-
-    return result;
-}
 
 export async function acceptRide(id: string): Promise<IRide | null> {
     const ride = await redisClient.hGetAll(`ride:${id}`);
@@ -175,7 +182,7 @@ export async function completeRide(id: string): Promise<IRide | null> {
 
     const location = await redisClient.geoPos('vehicles:2', vehicleId);
 
-    await redisClient.hSet(`vehicles:${vehicleId}`, 'availability', Availability.available.toString());
+    await redisClient.hSet(`vehicles:${vehicleId}`, 'availability', VehicleAvailability.available.toString());
     await redisClient.zRem('vehicles:2', vehicleId);
 
     if (location && location[0]) {
@@ -218,7 +225,7 @@ export async function cancelRide(id: string, reason?: string): Promise<IRide | n
 
         const location = await redisClient.geoPos('vehicles:2', vehicleId);
 
-        await redisClient.hSet(`vehicles:${vehicleId}`, 'availability', Availability.available.toString());
+        await redisClient.hSet(`vehicles:${vehicleId}`, 'availability', VehicleAvailability.available.toString());
         await redisClient.zRem('vehicles:1', vehicleId);
 
         if (location && location[0]) {
@@ -290,3 +297,11 @@ export async function deleteRide(id: string): Promise<boolean> {
 
     return true;
 }
+
+const calculatePrice = (ride: IRide) => {
+    return Math.floor(Math.random() * (10000 - 80)) + 80;
+}
+
+const sleep = (ms: number) => new Promise(
+    resolve => setTimeout(resolve, ms)
+);

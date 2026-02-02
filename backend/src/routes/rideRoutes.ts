@@ -3,6 +3,19 @@ import * as rc from '../controllers/rideController';
 
 const rideRouter = express.Router();
 
+
+rideRouter.post('/request', rc.createRide);
+
+rideRouter.get('/:id', rc.getRideById);
+
+rideRouter.delete('/:id', rc.deleteRide);
+
+rideRouter.put('/:id/cancel', rc.cancelRide);
+rideRouter.put('/:id/assignVehicle', rc.acceptRide);
+rideRouter.put('/:id/start', rc.startRide);
+rideRouter.put('/:id/complete', rc.completeRide);
+
+
 rideRouter.get('/passenger/:passengerId/active', rc.getActiveRideByPassenger);
 
 rideRouter.get('/driver/:driverId/active', rc.getActiveRideByDriver);
@@ -15,19 +28,6 @@ rideRouter.get('/vehicle/:vehicleId/active', rc.getActiveRideByVehicle);
     //putniku i po vozacu da se pretrazuje
 
 
-rideRouter.get('/', rc.getAllRides);
-
-rideRouter.get('/:id', rc.getRideById);
-
-rideRouter.post('/', rc.createRide);
-
-
-
-rideRouter.put('/:id/accept', rc.acceptRide);
-rideRouter.put('/:id/start', rc.startRide);
-rideRouter.put('/:id/complete', rc.completeRide);
-rideRouter.put('/:id/cancel', rc.cancelRide);
-
-rideRouter.delete('/:id', rc.deleteRide);
+// rideRouter.get('/', rc.getAllRides);
 
 export default rideRouter;

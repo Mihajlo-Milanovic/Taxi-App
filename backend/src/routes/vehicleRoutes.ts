@@ -1,7 +1,5 @@
 import express from 'express';
 import * as vc from '../controllers/vehicleController';
-import {swaggerDocs} from "../swagger/swaggerConfig";
-import swaggerJSDoc from "swagger-jsdoc";
 
 const vehicleRouter = express.Router();
 
@@ -104,7 +102,7 @@ vehicleRouter.get('/nearby/lat/:lat/lng/:lng/radius/:radius/maxCount/:maxCount',
  *     tags: [Vehicles]
  *     summary: Retrieve a driver of vehicle
  *     parameters:
- *      - in: path
+ *       - in: path
  *        name: id
  *        required: true
  *        schema:
