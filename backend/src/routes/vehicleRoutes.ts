@@ -109,7 +109,7 @@ vehicleRouter.get('/nearby/lat/:lat/lng/:lng/radius/:radius/maxCount/:maxCount',
  *        required: true
  *        schema:
  *          type: string
- *          example: 8ad84a39-25f1-498c-85e8-54e6a510126b
+ *          example: 63c8048d-e5ee-45e8-b847-7f48bb31e44a
  *     description: Retrieve a driver of vehicles from the application.
  *     responses:
  *       200:
