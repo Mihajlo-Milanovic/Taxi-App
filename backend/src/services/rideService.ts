@@ -5,7 +5,6 @@ import {IRedisRide, IRide} from "../data/Interfaces/IRide";
 import {VehicleAvailability} from "../data/Enumerations/VehicleAvailability";
 import {RideStatus} from "../data/Enumerations/RideStatus";
 import {IVehicle} from "../data/Interfaces/IVehicle";
-import {ILocation} from "../data/Interfaces/ILocation";
 
 
 const getRideStatus = async (id: string): Promise<RideStatus> => {
@@ -24,110 +23,107 @@ const setRideStatus = async (id: string, status: RideStatus): Promise<void> => {
 }
 
 export async function createRide(ride: IRide): Promise<IRide | null> {
-    //
-    // ride.id = uuid();
-    // ride.price = calculatePrice(ride);
-    //
-    // const n = await redisClient.hSet(`rides:${ride.id}`, {
-    //     id: ride.id,
-    //     passengerId: ride.passengerId,
-    //     status: RideStatus.Requested,
-    //     startLocationLat: ride.startLocation.latitude,
-    //     startLocationLng: ride.startLocation.longitude,
-    //     price: ride.price
-    // });
-    //
-    // if(n != 6)
-    //     return null;
-    //
-    // let nearbyVehicles: Array<IVehicle> = [];
-    //
-    // while ((await getRideStatus(ride.id)) == RideStatus.Requested) {
-    //
-    //     nearbyVehicles = await vehicleService.getNearbyVehicles(
-    //         ride.startLocation.latitude,
-    //         ride.startLocation.longitude,
-    //         20,
-    //         1
-    //     );
-    //     if(nearbyVehicles.length == 0){
-    //         await sleep(30000);
-    //     }
-    //     else{
-    //
-    //         const v = nearbyVehicles[0];
-    //         if (v){
-    //             ride.vehicleId = v.id;
-    //             ride.driverId = v.driverId;
-    //             ride.status = RideStatus.Accepted;
-    //
-    //             const n = await redisClient.hSet(`rides:${ride.id}`, {
-    //                 vehicleId: ride.vehicleId,
-    //                 driverId: ride.driverId,
-    //                 status: ride.status,
-    //             });
-    //
-    //             if(n != 3){
-    //                 await setRideStatus(ride.id, RideStatus.Requested);
-    //             }
-    //         }
-    //     }
-    // }
-    //
-    // //TODO:nastavi
-    //
-    // return ride;
-    return null;
+
+    ride.id = uuid();
+    ride.price = calculatePrice(ride);
+
+    const n = await redisClient.hSet(`rides:${ride.id}`, {
+        id: ride.id,
+        passengerId: ride.passengerId,
+        status: RideStatus.Requested,
+        startLocationLat: ride.startLocation.latitude,
+        startLocationLng: ride.startLocation.longitude,
+        price: ride.price
+    });
+
+    if(n != 6)
+        return null;
+
+    let nearbyVehicles: Array<IVehicle> = [];
+
+    while ((await getRideStatus(ride.id)) == RideStatus.Requested) {
+
+        nearbyVehicles = await vehicleService.getNearbyVehicles(
+            ride.startLocation.latitude,
+            ride.startLocation.longitude,
+            20,
+            1
+        );
+        if(nearbyVehicles.length == 0){
+            await sleep(30000);
+        }
+        else{
+
+            const v = nearbyVehicles[0];
+            if (v){
+                ride.vehicleId = v.id;
+                ride.driverId = v.driverId;
+                ride.status = RideStatus.Accepted;
+
+                const n = await redisClient.hSet(`rides:${ride.id}`, {
+                    vehicleId: ride.vehicleId,
+                    driverId: ride.driverId,
+                    status: ride.status,
+                });
+
+                if(n != 3){
+                    await setRideStatus(ride.id, RideStatus.Requested);
+                }
+
+               await vehicleService.updateVehicleAvailability(ride.vehicleId, VehicleAvailability.occupied)
+            }
+        }
+    }
+
+    return await getRideById(ride.id);
 }
 
 export async function getRideById(id: string): Promise<IRide | null> {
 
-    // const r = await redisClient.hGetAll(`rides:${id}`) as IRedisRide;
-    //
-    // if (!r || Object.keys(r).length === 0) {
-    //     return null;
-    // }
+    const r = await redisClient.hGetAll(`rides:${id}`) as IRedisRide;
 
-    // const ride: IRide = {
-    //     ...r,
-    //     price: null,
-    //     startLocation: { latitude: 0, longitude: 0};
-    //     destination: null;
-    // }
-    // if(r.price !== undefined)
-    //     ride.price = r.price;
-    // else
-    //     ride.price = null;
-    //
-    // return ride;
-    //     price: parseInt(ride.availability),
-    //     location: {
-    //         latitude: `${nv.coordinates?.latitude}`,
-    //         longitude: `${nv.coordinates?.longitude}`,
-    //     }
-    // };
-    return null;
-}
-
-export async function getAllRides(): Promise<IRide[]> {
-    const keys = await redisClient.keys('ride:*');
-
-    if (keys.length === 0) {
-        return [];
+    if (!r || Object.keys(r).length === 0 ||
+        r.destinationLat === undefined || r.destinationLng === undefined ||
+        r.rpice === undefined
+    ) {
+        return null;
     }
 
-    const rides = await Promise.all(
-        keys.map(async (key: string) => {
-            const ride = await redisClient.hGetAll(key);
-            return ride as unknown as IRide;
-        })
-    );
-
-    return rides;
+    return {
+        id: r.id,
+        passengerId: r.passengerId,
+        driverId: r.driverId,
+        vehicleId: r.vehicleId,
+        status: +r.status,
+        startLocation: {
+            latitude: r.startLocationLat,
+            longitude: r.startLocationLng,
+        },
+        destination: {
+            latitude: r.destinationLat,
+            longitude: r.destinationLng
+        },
+        rideTimespan: (+r.completionTime - +r.startingTime),
+        price: +r.price
+    } as IRide;
 }
 
-
-
+// export async function getAllRides(): Promise<IRide[]> {
+//     const keys = await redisClient.keys('ride:*');
+//
+//     if (keys.length === 0) {
+//         return [];
+//     }
+//
+//     const rides = await Promise.all(
+//         keys.map(async (key: string) => {
+//             const ride = await redisClient.hGetAll(key);
+//             return ride as unknown as IRide;
+//         })
+//     );
+//
+//     return rides;
+// }
 
 
 export async function acceptRide(id: string): Promise<IRide | null> {
@@ -204,47 +200,48 @@ export async function completeRide(id: string): Promise<IRide | null> {
     return await getRideById(id);
 }
 
-export async function cancelRide(id: string, reason?: string): Promise<IRide | null> {
-    const ride = await redisClient.hGetAll(`ride:${id}`);
-
-    if (!ride || Object.keys(ride).length === 0) {
-        return null;
-    }
-
-    if (ride.status === 'finished' || ride.status === 'cancelled') {
-        throw new Error('Vo�nja je ve? zavr�ena ili otkazana');
-    }
-
-    await redisClient.hSet(`ride:${id}`, 'status', 'cancelled');
-    if (reason) {
-        await redisClient.hSet(`ride:${id}`, 'cancelReason', reason);
-    }
-
-    if (ride.vehicleId) {
-        const vehicleId = ride.vehicleId;
-
-        const location = await redisClient.geoPos('vehicles:2', vehicleId);
-
-        await redisClient.hSet(`vehicles:${vehicleId}`, 'availability', VehicleAvailability.available.toString());
-        await redisClient.zRem('vehicles:1', vehicleId);
-
-        if (location && location[0]) {
-            await redisClient.geoAdd('vehicles:1', {
-                longitude: location[0].longitude,
-                latitude: location[0].latitude,
-                member: vehicleId
-            });
-        }
-
-        if (ride.driverId) {
-            await redisClient.del(`driver:${ride.driverId}:active-ride`);
-        }
-        await redisClient.del(`vehicles:${vehicleId}:active-ride`);
-    }
-
-    await redisClient.del(`passenger:${ride.passengerId}:active-ride`);
-
-    return await getRideById(id);
+export async function cancelRide(id: string): Promise<IRide | null> {
+    // const ride = await redisClient.hGetAll(`ride:${id}`);
+    //
+    // if (!ride || Object.keys(ride).length === 0) {
+    //     return null;
+    // }
+    //
+    // if (ride.status === 'finished' || ride.status === 'cancelled') {
+    //     throw new Error('Vo�nja je ve? zavr�ena ili otkazana');
+    // }
+    //
+    // await redisClient.hSet(`ride:${id}`, 'status', 'cancelled');
+    // if (reason) {
+    //     await redisClient.hSet(`ride:${id}`, 'cancelReason', reason);
+    // }
+    //
+    // if (ride.vehicleId) {
+    //     const vehicleId = ride.vehicleId;
+    //
+    //     const location = await redisClient.geoPos('vehicles:2', vehicleId);
+    //
+    //     await redisClient.hSet(`vehicles:${vehicleId}`, 'availability', VehicleAvailability.available.toString());
+    //     await redisClient.zRem('vehicles:1', vehicleId);
+    //
+    //     if (location && location[0]) {
+    //         await redisClient.geoAdd('vehicles:1', {
+    //             longitude: location[0].longitude,
+    //             latitude: location[0].latitude,
+    //             member: vehicleId
+    //         });
+    //     }
+    //
+    //     if (ride.driverId) {
+    //         await redisClient.del(`driver:${ride.driverId}:active-ride`);
+    //     }
+    //     await redisClient.del(`vehicles:${vehicleId}:active-ride`);
+    // }
+    //
+    // await redisClient.del(`passenger:${ride.passengerId}:active-ride`);
+    //
+    // return await getRideById(id);
+    return null;
 }
 
 export async function getActiveRideByPassenger(passengerId: string): Promise<IRide | null> {

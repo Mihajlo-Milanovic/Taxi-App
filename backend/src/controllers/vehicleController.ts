@@ -74,7 +74,7 @@ export const getDriverForVehicle = async (req: Request, res: Response, next: Nex
 
         const result = await vehicleService.getDriverForVehicle(id);
 
-        if (result.id != null)
+        if (result)
             res.status(200).json(result).end();
         else
             res.status(404).send("Driver information unavailable.").end();
