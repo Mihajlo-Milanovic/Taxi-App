@@ -18,7 +18,7 @@ const rideRouter = express.Router();
  *             $ref: '#/components/schemas/NewRide'
  *     responses:
  *       201:
- *         description: Vožnja uspešno kreirana
+ *         description: Ride created successfully
  *         content:
  *           application/json:
  *             schema:
@@ -38,7 +38,7 @@ const rideRouter = express.Router();
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example:
  *               success: false
- *               error: Nema dostupnih vozila u blizini
+ *               error: No nearby vehicles
  */
 rideRouter.post('/request', rc.createRide);
 
@@ -59,30 +59,21 @@ rideRouter.post('/request', rc.createRide);
  *         example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
  *     responses:
  *       200:
- *         description: Vožnja sa ID
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/RideResponse'
  *       404:
- *         description: Vožnja nije prona?ena
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               success: false
- *               error: Vožnja nije prona?ena
- *       400:
- *         description: ID vožnje je obavezan
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               success: false
- *               error: ID vožnje je obavezan
+ *         description: Ride not found
  *
+ *       400:
+ *         description: Ride ID is required
+ */
+rideRouter.get('/:id', rc.getRideById);
+
+/**
+ * @swagger
+ * /rides/{id}:
  *   delete:
  *     tags: [Rides]
  *     summary: Delete a ride
@@ -97,38 +88,15 @@ rideRouter.post('/request', rc.createRide);
  *         example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
  *     responses:
  *       200:
- *         description: Vožnja obrisana
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Vožnja obrisana
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+ *         description: Ride deleted successfully
+ *
  *       404:
- *         description: Vožnja nije prona?ena
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         description: Ride not found
+ *
  *       400:
- *         description: ID vožnje je obavezan
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         description: Ride ID is required
+ *
  */
-rideRouter.get('/:id', rc.getRideById);
 rideRouter.delete('/:id', rc.deleteRide);
 
 /**
@@ -146,61 +114,28 @@ rideRouter.delete('/:id', rc.deleteRide);
  *           type: string
  *         description: Ride ID
  *         example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               reason:
- *                 type: string
- *                 description: Reason for cancellation
- *                 example: Passenger changed plans
  *     responses:
  *       200:
- *         description: Vožnja otkazana
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/RideResponse'
- *             example:
- *               success: true
- *               message: Vožnja otkazana
- *               data:
- *                 ride:
- *                   id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
- *                   status: cancelled
+ *               $ref: '#/components/schemas/Ride'
+ *
  *       404:
- *         description: Vožnja nije prona?ena
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         description: Ride not found
+ *
  *       400:
  *         description: Bad request - ride already completed/cancelled or ID missing
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             examples:
- *               alreadyCancelled:
- *                 value:
- *                   success: false
- *                   error: Vožnja je ve? završena ili otkazana
- *               missingId:
- *                 value:
- *                   success: false
- *                   error: ID vožnje je obavezan
  */
 rideRouter.put('/:id/cancel', rc.cancelRide);
 
 /**
- * @swagger
- * /rides/{id}/assignVehicle:
+ *
+ * /rides/{id}/findVehicle:
  *   put:
  *     tags: [Rides]
- *     summary: Accept/assign vehicle to ride
- *     description: Driver accepts the ride and assigns their vehicle
+ *     summary: Find vehicle for ride
+ *     description: Server searches for a nearby available vehicle
  *     parameters:
  *       - in: path
  *         name: id
@@ -211,20 +146,20 @@ rideRouter.put('/:id/cancel', rc.cancelRide);
  *         example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
  *     responses:
  *       200:
- *         description: Vožnja prihva?ena
+ *         description: Vo?nja prihva?ena
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/RideResponse'
  *             example:
  *               success: true
- *               message: Vožnja prihva?ena
+ *               message: Vo?nja prihva?ena
  *               data:
  *                 ride:
  *                   id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
  *                   status: accepted
  *       404:
- *         description: Vožnja nije prona?ena
+ *         description: Vo?nja nije prona?ena
  *         content:
  *           application/json:
  *             schema:
@@ -235,17 +170,8 @@ rideRouter.put('/:id/cancel', rc.cancelRide);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             examples:
- *               alreadyAccepted:
- *                 value:
- *                   success: false
- *                   error: Vožnja je ve? prihva?ena ili u toku
- *               missingId:
- *                 value:
- *                   success: false
- *                   error: ID vožnje je obavezan
  */
-rideRouter.put('/:id/assignVehicle', rc.acceptRide);
+rideRouter.put('/:id/findVehicle', rc.findVehicleForRide);
 
 /**
  * @swagger
@@ -264,24 +190,15 @@ rideRouter.put('/:id/assignVehicle', rc.acceptRide);
  *         example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
  *     responses:
  *       200:
- *         description: Vožnja po?ela
+ *         description: Ride started
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/RideResponse'
- *             example:
- *               success: true
- *               message: Vožnja po?ela
- *               data:
- *                 ride:
- *                   id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
- *                   status: in_progress
+ *               $ref: '#/components/schemas/Ride'
+ *
  *       404:
- *         description: Vožnja nije prona?ena
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         description: Vo?nja nije prona?ena
+ *
  *       400:
  *         description: Bad request - ride must be accepted first or ID missing
  *         content:
@@ -292,11 +209,11 @@ rideRouter.put('/:id/assignVehicle', rc.acceptRide);
  *               notAccepted:
  *                 value:
  *                   success: false
- *                   error: Vožnja mora biti prihva?ena pre po?etka
+ *                   error: Vo?nja mora biti prihva?ena pre po?etka
  *               missingId:
  *                 value:
  *                   success: false
- *                   error: ID vožnje je obavezan
+ *                   error: ID vo?nje je obavezan
  */
 rideRouter.put('/:id/start', rc.startRide);
 
@@ -317,20 +234,20 @@ rideRouter.put('/:id/start', rc.startRide);
  *         example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
  *     responses:
  *       200:
- *         description: Vožnja završena
+ *         description: Vo?nja zavr?ena
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/RideResponse'
  *             example:
  *               success: true
- *               message: Vožnja završena
+ *               message: Vo?nja zavr?ena
  *               data:
  *                 ride:
  *                   id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
  *                   status: completed
  *       404:
- *         description: Vožnja nije prona?ena
+ *         description: Vo?nja nije prona?ena
  *         content:
  *           application/json:
  *             schema:
@@ -345,15 +262,15 @@ rideRouter.put('/:id/start', rc.startRide);
  *               notInProgress:
  *                 value:
  *                   success: false
- *                   error: Vožnja mora biti u toku da bi se završila
+ *                   error: Vo?nja mora biti u toku da bi se zavr?ila
  *               noVehicle:
  *                 value:
  *                   success: false
- *                   error: Vožnja nema dodeljeno vozilo
+ *                   error: Vo?nja nema dodeljeno vozilo
  *               missingId:
  *                 value:
  *                   success: false
- *                   error: ID vožnje je obavezan
+ *                   error: ID vo?nje je obavezan
  */
 rideRouter.put('/:id/complete', rc.completeRide);
 
@@ -385,7 +302,7 @@ rideRouter.put('/:id/complete', rc.completeRide);
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Aktivna vožnja putnika
+ *                   example: Aktivna vo?nja putnika
  *                 data:
  *                   type: object
  *                   properties:
@@ -397,7 +314,7 @@ rideRouter.put('/:id/complete', rc.completeRide);
  *               withRide:
  *                 value:
  *                   success: true
- *                   message: Aktivna vožnja putnika
+ *                   message: Aktivna vo?nja putnika
  *                   data:
  *                     ride:
  *                       id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
@@ -405,7 +322,7 @@ rideRouter.put('/:id/complete', rc.completeRide);
  *               noRide:
  *                 value:
  *                   success: true
- *                   message: Nema aktivne vožnje
+ *                   message: Nema aktivne vo?nje
  *                   data:
  *                     ride: null
  *       400:
@@ -445,7 +362,7 @@ rideRouter.get('/passenger/:passengerId/active', rc.getActiveRideByPassenger);
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Aktivna vožnja voza?a
+ *                   example: Aktivna vo?nja voza?a
  *                 data:
  *                   type: object
  *                   properties:
@@ -457,7 +374,7 @@ rideRouter.get('/passenger/:passengerId/active', rc.getActiveRideByPassenger);
  *               withRide:
  *                 value:
  *                   success: true
- *                   message: Aktivna vožnja voza?a
+ *                   message: Aktivna vo?nja voza?a
  *                   data:
  *                     ride:
  *                       id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
@@ -465,7 +382,7 @@ rideRouter.get('/passenger/:passengerId/active', rc.getActiveRideByPassenger);
  *               noRide:
  *                 value:
  *                   success: true
- *                   message: Nema aktivne vožnje
+ *                   message: Nema aktivne vo?nje
  *                   data:
  *                     ride: null
  *       400:
@@ -505,7 +422,7 @@ rideRouter.get('/driver/:driverId/active', rc.getActiveRideByDriver);
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Aktivna vožnja vozila
+ *                   example: Aktivna vo?nja vozila
  *                 data:
  *                   type: object
  *                   properties:
@@ -517,7 +434,7 @@ rideRouter.get('/driver/:driverId/active', rc.getActiveRideByDriver);
  *               withRide:
  *                 value:
  *                   success: true
- *                   message: Aktivna vožnja vozila
+ *                   message: Aktivna vo?nja vozila
  *                   data:
  *                     ride:
  *                       id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
@@ -525,7 +442,7 @@ rideRouter.get('/driver/:driverId/active', rc.getActiveRideByDriver);
  *               noRide:
  *                 value:
  *                   success: true
- *                   message: Nema aktivne vožnje
+ *                   message: Nema aktivne vo?nje
  *                   data:
  *                     ride: null
  *       400:
@@ -547,7 +464,7 @@ rideRouter.get('/vehicle/:vehicleId/active', rc.getActiveRideByVehicle);
 //  *     description: Retrieve a list of all rides
 //  *     responses:
 //  *       200:
-//  *         description: Lista svih vožnji
+//  *         description: Lista svih vo?nji
 //  *         content:
 //  *           application/json:
 //  *             schema:
@@ -558,7 +475,7 @@ rideRouter.get('/vehicle/:vehicleId/active', rc.getActiveRideByVehicle);
 //  *                   example: true
 //  *                 message:
 //  *                   type: string
-//  *                   example: Lista svih vožnji
+//  *                   example: Lista svih vo?nji
 //  *                 data:
 //  *                   type: object
 //  *                   properties:

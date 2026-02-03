@@ -51,10 +51,6 @@
  *           type: number
  *           description: Price of the ride
  *           example: 500
- *         cancelReason:
- *           type: string
- *           description: Reason for cancellation (if applicable)
- *           example: Passenger changed plans
  *
  *     Ride:
  *       allOf:
@@ -79,7 +75,7 @@
  *           example: true
  *         message:
  *           type: string
- *           example: Vožnja uspešno kreirana
+ *           example: Voï¿½nja uspeï¿½no kreirana
  *         data:
  *           type: object
  *           properties:
@@ -94,5 +90,5 @@
  *           example: false
  *         error:
  *           type: string
- *           example: Vožnja nije prona?ena
+ *           example: Voï¿½nja nije prona?ena
  */
