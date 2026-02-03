@@ -1,6 +1,13 @@
 import app from "./app";
-import {port} from "./config/config";
+import {connectToRedisDB, testConnection} from "./config/db";
+import {PORT, SWAGGER_PORT} from "./config/config";
 
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+connectToRedisDB().then(()=> {
+    testConnection().then(()=> {
+        app.listen(PORT, () => {
+            console.log(`Server running on http://localhost:${PORT}`);
+            console.log(`Swagger docs available at http://localhost:${PORT}/docs`);
+        });
+    });
 });
+

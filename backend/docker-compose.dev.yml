@@ -1,0 +1,41 @@
+name: taxi-backend-dev
+services:
+  redis-db:
+    image: redis
+    container_name: redis-db
+    volumes:
+      - redis-data:/data
+    networks:
+      - redis-net
+
+  taxi-backend-dev:
+    image: taxi-backend-img
+    container_name: taxi-backend-dev
+    working_dir: /app
+    ports:
+      - "5000:5000"
+      - "3000:3000"
+    environment:
+      REDIS_HOST: redis-db
+      REDIS_PORT: 6379
+      SWAGGER_PORT: 3000
+      NODE_ENV: development
+    depends_on:
+      - redis-db
+    networks:
+      - redis-net
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /app/src
+        - action: sync+restart
+          path: ./.
+          target: /app/.
+
+volumes:
+  redis-data:
+
+networks:
+  redis-net:
+    driver: bridge
