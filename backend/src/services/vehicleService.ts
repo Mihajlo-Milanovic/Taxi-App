@@ -5,6 +5,7 @@ import {redisClient} from '../config/db';
 import {v4 as uuid} from 'uuid';
 import {GEO_REPLY_WITH} from "redis";
 import {ILocation} from "../data/Interfaces/ILocation";
+import {getDriverById} from "./driverService";
 
 
 export const createVehicle = async (vehicle: IVehicle): Promise<string> => {
@@ -88,9 +89,13 @@ export const getNearbyVehicles = async (lat: string, lng:string, radius:number, 
      return result;
 }
 
-export const getDriverForVehicle = async (id: string): Promise<IDriver> => {
+export const getDriverForVehicle = async (id: string): Promise<IDriver | null> => {
 
-    return await redisClient.hGetAll(`driver:${id}`, ) as IRedisDriver;
+    const driverId = await redisClient.hGet(`vehicles:${id}`, 'driverId');
+    if (driverId != null)
+        return await getDriverById(driverId);
+    else
+        return null;
 }
 
 export const getVehicleLocation = async (id: string, availability: VehicleAvailability): Promise<ILocation | null> => {
