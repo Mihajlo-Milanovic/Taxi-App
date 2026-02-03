@@ -39,23 +39,28 @@ export async function createRide(ride: IRide): Promise<IRide | null> {
     if(n != 6)
         return null;
 
+    findVehicleForRide(ride)
+
+    return await getRideById(ride.id);
+}
+
+const findVehicleForRide = async (ride: IRide): Promise<void> => {
+
     let nearbyVehicles: Array<IVehicle> = [];
 
     while ((await getRideStatus(ride.id)) == RideStatus.Requested) {
-
         nearbyVehicles = await vehicleService.getNearbyVehicles(
             ride.startLocation.latitude,
             ride.startLocation.longitude,
             20,
             1
         );
-        if(nearbyVehicles.length == 0){
+        if (nearbyVehicles.length == 0) {
             await sleep(30000);
-        }
-        else{
+        } else {
 
             const v = nearbyVehicles[0];
-            if (v){
+            if (v) {
                 ride.vehicleId = v.id;
                 ride.driverId = v.driverId;
                 ride.status = RideStatus.Accepted;
@@ -66,16 +71,14 @@ export async function createRide(ride: IRide): Promise<IRide | null> {
                     status: ride.status,
                 });
 
-                if(n != 3){
+                if (n != 3) {
                     await setRideStatus(ride.id, RideStatus.Requested);
                 }
 
-               await vehicleService.updateVehicleAvailability(ride.vehicleId, VehicleAvailability.occupied)
+                await vehicleService.updateVehicleAvailability(ride.vehicleId, VehicleAvailability.occupied)
             }
         }
     }
-
-    return await getRideById(ride.id);
 }
 
 export async function getRideById(id: string): Promise<IRide | null> {
@@ -84,7 +87,7 @@ export async function getRideById(id: string): Promise<IRide | null> {
 
     if (!r || Object.keys(r).length === 0 ||
         r.destinationLat === undefined || r.destinationLng === undefined ||
-        r.rpice === undefined
+        r.price === undefined
     ) {
         return null;
     }
@@ -124,6 +127,21 @@ export async function getRideById(id: string): Promise<IRide | null> {
 //
 //     return rides;
 // }
+
+export async function cancelRide(id: string): Promise<IRide | null> {
+
+    const ride = await redisClient.hSetEx(`rides:${id}`, {
+        TTL: 60,
+        status : RideStatus.Cancelled
+    });
+
+    const vid = await redisClient.hGet(`rides:${id}`, 'vehicleId')
+
+    if (vid)
+        await vehicleService.updateVehicleAvailability(vid, VehicleAvailability.available);
+
+    return await getRideById(id);
+}
 
 
 export async function acceptRide(id: string): Promise<IRide | null> {
@@ -200,49 +218,7 @@ export async function completeRide(id: string): Promise<IRide | null> {
     return await getRideById(id);
 }
 
-export async function cancelRide(id: string): Promise<IRide | null> {
-    // const ride = await redisClient.hGetAll(`ride:${id}`);
-    //
-    // if (!ride || Object.keys(ride).length === 0) {
-    //     return null;
-    // }
-    //
-    // if (ride.status === 'finished' || ride.status === 'cancelled') {
-    //     throw new Error('Vo�nja je ve? zavr�ena ili otkazana');
-    // }
-    //
-    // await redisClient.hSet(`ride:${id}`, 'status', 'cancelled');
-    // if (reason) {
-    //     await redisClient.hSet(`ride:${id}`, 'cancelReason', reason);
-    // }
-    //
-    // if (ride.vehicleId) {
-    //     const vehicleId = ride.vehicleId;
-    //
-    //     const location = await redisClient.geoPos('vehicles:2', vehicleId);
-    //
-    //     await redisClient.hSet(`vehicles:${vehicleId}`, 'availability', VehicleAvailability.available.toString());
-    //     await redisClient.zRem('vehicles:1', vehicleId);
-    //
-    //     if (location && location[0]) {
-    //         await redisClient.geoAdd('vehicles:1', {
-    //             longitude: location[0].longitude,
-    //             latitude: location[0].latitude,
-    //             member: vehicleId
-    //         });
-    //     }
-    //
-    //     if (ride.driverId) {
-    //         await redisClient.del(`driver:${ride.driverId}:active-ride`);
-    //     }
-    //     await redisClient.del(`vehicles:${vehicleId}:active-ride`);
-    // }
-    //
-    // await redisClient.del(`passenger:${ride.passengerId}:active-ride`);
-    //
-    // return await getRideById(id);
-    return null;
-}
+
 
 export async function getActiveRideByPassenger(passengerId: string): Promise<IRide | null> {
     const rideId = await redisClient.get(`passenger:${passengerId}:active-ride`);
