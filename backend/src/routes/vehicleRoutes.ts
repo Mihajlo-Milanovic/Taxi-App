@@ -101,22 +101,29 @@ vehicleRouter.get('/nearby/lat/:lat/lng/:lng/radius/:radius/maxCount/:maxCount',
  *   get:
  *     tags: [Vehicles]
  *     summary: Retrieve a driver of vehicle
+ *     description: Get the driver assigned to a specific vehicle by vehicle ID
  *     parameters:
  *       - in: path
- *        name: id
- *        required: true
- *        schema:
- *          type: string
- *          example: 63c8048d-e5ee-45e8-b847-7f48bb31e44a
- *     description: Retrieve a driver of vehicles from the application.
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Vehicle ID
+ *         example: 63c8048d-e5ee-45e8-b847-7f48bb31e44a
  *     responses:
  *       200:
+ *         description: Driver information retrieved successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#components/schemas/Driver'
+ *               $ref: '#/components/schemas/Driver'
  *       404:
- *         description: Vehicle not found
+ *         description: Driver information unavailable
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: Driver information unavailable.
  */
 vehicleRouter.get('/:id/driver', vc.getDriverForVehicle);
 

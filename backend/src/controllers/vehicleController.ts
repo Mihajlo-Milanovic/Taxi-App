@@ -68,16 +68,15 @@ export const getNearbyVehicles = async (req: Request, res: Response, next: NextF
 
 export const getDriverForVehicle = async (req: Request, res: Response, next: NextFunction) => {
     try {
-
-        //TODO: Validation
         const id = req.params.id as string;
 
         const result = await vehicleService.getDriverForVehicle(id);
 
-        if (result.id != null)
+        if (result && result.id) {
             res.status(200).json(result).end();
-        else
+        } else {
             res.status(404).send("Driver information unavailable.").end();
+        }
 
     } catch (error) {
         next(error);

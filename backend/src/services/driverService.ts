@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {IDriver} from "../data/Interfaces/IDriver";
 
 export async function getAllDrivers(): Promise<IDriver[]> {
-    const keys = await redisClient.keys('driver:*');
+    const keys = await redisClient.keys('drivers:*');
 
     if (keys.length === 0) {
         return [];
@@ -20,7 +20,7 @@ export async function getAllDrivers(): Promise<IDriver[]> {
 }
 
 export async function getDriverById(id: string): Promise<IDriver | null> {
-    const driver = await redisClient.hGetAll(`driver:${id}`);
+    const driver = await redisClient.hGetAll(`drivers:${id}`);
 
     if (!driver || Object.keys(driver).length === 0) {
         return null;
@@ -32,7 +32,7 @@ export async function getDriverById(id: string): Promise<IDriver | null> {
 export async function createDriver(firstName: string, lastName: string): Promise<IDriver> {
     const driverId = uuidv4();
 
-    await redisClient.hSet(`driver:${driverId}`, {
+    await redisClient.hSet(`drivers:${driverId}`, {
         id: driverId,
         firstName,
         lastName
@@ -47,14 +47,14 @@ export async function createDriver(firstName: string, lastName: string): Promise
 }
 
 export async function updateDriver(id: string, firstName: string, lastName: string): Promise<IDriver | null> {
-    const exists = await redisClient.exists(`driver:${id}`);
+    const exists = await redisClient.exists(`drivers:${id}`);
 
     if (!exists) {
         return null;
     }
 
-    await redisClient.hSet(`driver:${id}`, 'firstName', firstName);
-    await redisClient.hSet(`driver:${id}`, 'lastName', lastName);
+    await redisClient.hSet(`drivers:${id}`, 'firstName', firstName);
+    await redisClient.hSet(`drivers:${id}`, 'lastName', lastName);
 
 
     return {
@@ -65,12 +65,12 @@ export async function updateDriver(id: string, firstName: string, lastName: stri
 }
 
 export async function deleteDriver(id: string): Promise<boolean> {
-    const exists = await redisClient.exists(`driver:${id}`);
+    const exists = await redisClient.exists(`drivers:${id}`);
 
     if (!exists) {
         return false;
     }
 
-    await redisClient.del(`driver:${id}`);
+    await redisClient.del(`drivers:${id}`);
     return true;
 }
