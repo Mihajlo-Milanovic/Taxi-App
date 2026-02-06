@@ -67,6 +67,25 @@ export const getRideById = async (req: Request, res: Response, next: NextFunctio
     }
 };
 
+export const deleteRide = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const id = req.params.id as string;
+
+        if (!id)
+            return res.status(400).send("Ride ID is required").end();
+
+        const deleted = await rideService.deleteRide(id);
+
+        if (deleted)
+            res.status(200).send("Ride deleted successfully").end();
+        else
+            return res.status(404).send("Ride not found").end();
+
+    } catch (error) {
+        next(error);
+    }
+};
+
 // export const getAllRides = async (req: Request, res: Response, next: NextFunction) => {
 //     try {
 //         const rides = await rideService.getAllRides();
@@ -92,64 +111,20 @@ export const getRideById = async (req: Request, res: Response, next: NextFunctio
 export const cancelRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const id = req.params.id as string;
-        // const { reason } = req.body;
 
         if (id === undefined) {
             return res.status(400).send("Invalid request").end();
         }
 
-        const ride = await rideService.cancelRide(id);
+        const result = await rideService.cancelRide(id);
 
-        if (!ride) {
-            return res.status(404).json({
-                success: false,
-                error: "Vožnja nije pronađena"
-            });
-        }
+        if (result.ride && result.success)
+            res.status(200).json(result.ride).end();
+        else
+            res.status(404).send("Ride not found").end();
 
-        res.status(200).json({
-            success: true,
-            message: "Vožnja otkazana",
-            data: { ride }
-        });
     } catch (error: unknown) {
         if (error instanceof Error && error.message === 'Vožnja je već završena ili otkazana') {
-            return res.status(400).json({
-                success: false,
-                error: error.message
-            });
-        }
-        next(error);
-    }
-};
-
-export const acceptRide = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const id = req.params.id as string;
-
-        if (!id) {
-            return res.status(400).json({
-                success: false,
-                error: "ID vožnje je obavezan"
-            });
-        }
-
-        const ride = await rideService.acceptRide(id);
-
-        if (!ride) {
-            return res.status(404).json({
-                success: false,
-                error: "Vožnja nije pronađena"
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            message: "Vožnja prihvaćena",
-            data: { ride }
-        });
-    } catch (error: unknown) {
-        if (error instanceof Error && error.message === 'Vožnja je već prihvaćena ili u toku') {
             return res.status(400).json({
                 success: false,
                 error: error.message
@@ -163,27 +138,17 @@ export const startRide = async (req: Request, res: Response, next: NextFunction)
     try {
         const id = req.params.id as string;
 
-        if (!id) {
-            return res.status(400).json({
-                success: false,
-                error: "ID vožnje je obavezan"
-            });
+        if (id === undefined) {
+            return res.status(400).send("Invalid request").end();
         }
 
-        const ride = await rideService.startRide(id);
+        const result = await rideService.startRide(id);
 
-        if (!ride) {
-            return res.status(404).json({
-                success: false,
-                error: "Vožnja nije pronađena"
-            });
-        }
+        if (result.ride && result.success)
+            res.status(200).json(result.ride).end();
+        else
+            res.status(404).send("Ride not found").end();
 
-        res.status(200).json({
-            success: true,
-            message: "Vožnja počela",
-            data: { ride }
-        });
     } catch (error: unknown) {
         if (error instanceof Error && error.message === 'Vožnja mora biti prihvaćena pre početka') {
             return res.status(400).json({
@@ -199,27 +164,17 @@ export const completeRide = async (req: Request, res: Response, next: NextFuncti
     try {
         const id = req.params.id as string;
 
-        if (!id) {
-            return res.status(400).json({
-                success: false,
-                error: "ID vožnje je obavezan"
-            });
+        if (id === undefined) {
+            return res.status(400).send("Invalid request").end();
         }
 
-        const ride = await rideService.completeRide(id);
+        const result = await rideService.completeRide(id);
 
-        if (!ride) {
-            return res.status(404).json({
-                success: false,
-                error: "Vožnja nije pronađena"
-            });
-        }
+        if (result.ride && result.success)
+            res.status(200).json(result.ride).end();
+        else
+            res.status(404).send("Ride not found").end();
 
-        res.status(200).json({
-            success: true,
-            message: "Vožnja završena",
-            data: { ride }
-        });
     } catch (error: unknown) {
         if (error instanceof Error) {
             if (error.message === 'Vožnja mora biti u toku da bi se završila' ||
@@ -229,6 +184,30 @@ export const completeRide = async (req: Request, res: Response, next: NextFuncti
                     error: error.message
                 });
             }
+        }
+        next(error);
+    }
+};
+
+export const findVehicleForRide = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const id = req.params.id as string;
+
+        if (id === undefined) {
+            return res.status(400).send("Invalid request").end();
+        }
+
+        await rideService.findVehicleForRide(id);
+
+        res.status(200).send("Searching for a vehicle").end();
+
+
+    } catch (error: unknown) {
+        if (error instanceof Error && error.message === 'Ride not found') {
+            return res.status(404).json({
+                success: false,
+                error: error.message
+            });
         }
         next(error);
     }
@@ -328,32 +307,3 @@ export const getActiveRideByVehicle = async (req: Request, res: Response, next: 
     }
 };
 
-export const deleteRide = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const id = req.params.id as string;
-
-        if (!id) {
-            return res.status(400).json({
-                success: false,
-                error: "ID vožnje je obavezan"
-            });
-        }
-
-        const deleted = await rideService.deleteRide(id);
-
-        if (!deleted) {
-            return res.status(404).json({
-                success: false,
-                error: "Vožnja nije pronađena"
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            message: "Vožnja obrisana",
-            data: { id }
-        });
-    } catch (error) {
-        next(error);
-    }
-};
