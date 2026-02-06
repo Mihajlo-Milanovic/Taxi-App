@@ -7,25 +7,29 @@ export const createRide = async (req: Request, res: Response, next: NextFunction
     try {
         const ride: IRide = req.body;
 
-        if (
-            ride === undefined ||
-            ride.passengerId === undefined ||
-            ride.driverId === undefined ||
-            ride.vehicleId === undefined ||
-            ride.status === undefined ||
-            ride.startLocation === undefined ||
-            ride.destination === undefined ||
-            ride.price === undefined
-        ) {
-            return res.status(400).send("Invalid request").end();
+        // Validacija obaveznih polja
+        if (!ride.passengerId || !ride.startLocation ||
+            !ride.destination || !ride.price) {
+            return res.status(400).json({
+                success: false,
+                error: "Nedostaju obavezna polja: passengerId, startLocation, destination, price"
+            });
         }
 
         const result = await rideService.createRide(ride);
 
-        if (result != null)
-            res.status(201).json(result).end();
-        else
-            return res.status(400).send("Invalid request").end();
+        if (!result) {
+            return res.status(400).json({
+                success: false,
+                error: "Kreiranje voznje nije uspelo"
+            });
+        }
+
+        res.status(201).json({
+            success: true,
+            message: "Voznja uspesno kreirana",
+            data: { ride: result }
+        });
 
     } catch (error) {
         next(error);
@@ -36,16 +40,27 @@ export const getRideById = async (req: Request, res: Response, next: NextFunctio
     try {
         const id = req.params.id as string;
 
-        if (id === undefined) {
-            return res.status(400).send("Invalid request").end();
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                error: "ID voznje je obavezan"
+            });
         }
 
         const ride = await rideService.getRideById(id);
 
-        if (ride)
-            res.status(200).json(ride).end();
-        else
-            res.status(404).send("Ride not found").end();
+        if (!ride) {
+            return res.status(404).json({
+                success: false,
+                error: "Voznja nije pronadjena"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: `Voznja sa ID: ${id}`,
+            data: { ride }
+        });
 
     } catch (error) {
         next(error);
