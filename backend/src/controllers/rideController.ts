@@ -7,29 +7,20 @@ export const createRide = async (req: Request, res: Response, next: NextFunction
     try {
         const ride: IRide = req.body;
 
-        // Validacija obaveznih polja
-        if (!ride.passengerId || !ride.startLocation ||
-            !ride.destination || !ride.price) {
-            return res.status(400).json({
-                success: false,
-                error: "Nedostaju obavezna polja: passengerId, startLocation, destination, price"
-            });
+        if (
+            !ride.passengerId ||
+            !ride.startLocation ||
+            !ride.destination
+        ) {
+            return res.status(400).send("Invalid request").end();
         }
 
         const result = await rideService.createRide(ride);
 
-        if (!result) {
-            return res.status(400).json({
-                success: false,
-                error: "Kreiranje voznje nije uspelo"
-            });
-        }
-
-        res.status(201).json({
-            success: true,
-            message: "Voznja uspesno kreirana",
-            data: { ride: result }
-        });
+        if (result != null)
+        res.status(201).json(result).end();
+    else
+        return res.status(400).send("Invalid request").end();
 
     } catch (error) {
         next(error);
@@ -40,27 +31,16 @@ export const getRideById = async (req: Request, res: Response, next: NextFunctio
     try {
         const id = req.params.id as string;
 
-        if (!id) {
-            return res.status(400).json({
-                success: false,
-                error: "ID voznje je obavezan"
-            });
+        if (id === undefined) {
+            return res.status(400).send("Invalid request").end();
         }
 
         const ride = await rideService.getRideById(id);
 
-        if (!ride) {
-            return res.status(404).json({
-                success: false,
-                error: "Voznja nije pronadjena"
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            message: `Voznja sa ID: ${id}`,
-            data: { ride }
-        });
+        if (ride != null)
+            res.status(200).json(ride).end();
+        else
+            res.status(404).send("Ride not found").end();
 
     } catch (error) {
         next(error);
@@ -111,6 +91,7 @@ export const deleteRide = async (req: Request, res: Response, next: NextFunction
 export const cancelRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const id = req.params.id as string;
+
 
         if (id === undefined) {
             return res.status(400).send("Invalid request").end();
@@ -218,28 +199,17 @@ export const getActiveRideByPassenger = async (req: Request, res: Response, next
     try {
         const passengerId = req.params.passengerId as string;
 
-        if (!passengerId) {
-            return res.status(400).json({
-                success: false,
-                error: "ID putnika je obavezan"
-            });
+        if (passengerId === undefined) {
+            return res.status(400).send("Invalid request").end();
         }
 
-        const ride = await rideService.getActiveRideByPassenger(passengerId);
+        const result = await rideService.getActiveRideByPassenger(passengerId);
 
-        if (!ride) {
-            return res.status(200).json({
-                success: true,
-                message: "Nema aktivne vožnje",
-                data: { ride: null }
-            });
-        }
+        if (result != null)
+            res.status(200).json(result).end();
+        else
+            res.status(404).send("Ride not found").end();
 
-        res.status(200).json({
-            success: true,
-            message: "Aktivna vožnja putnika",
-            data: { ride }
-        });
     } catch (error) {
         next(error);
     }
@@ -249,28 +219,17 @@ export const getActiveRideByDriver = async (req: Request, res: Response, next: N
     try {
         const driverId = req.params.driverId as string;
 
-        if (!driverId) {
-            return res.status(400).json({
-                success: false,
-                error: "ID vozača je obavezan"
-            });
+        if (driverId === undefined) {
+            return res.status(400).send("Invalid request").end();
         }
 
-        const ride = await rideService.getActiveRideByDriver(driverId);
+        const result = await rideService.getActiveRideByDriver(driverId);
 
-        if (!ride) {
-            return res.status(200).json({
-                success: true,
-                message: "Nema aktivne vožnje",
-                data: { ride: null }
-            });
-        }
+        if (result != null)
+            res.status(200).json(result).end();
+        else
+            res.status(404).send("Ride not found").end();
 
-        res.status(200).json({
-            success: true,
-            message: "Aktivna vožnja vozača",
-            data: { ride }
-        });
     } catch (error) {
         next(error);
     }
@@ -280,28 +239,17 @@ export const getActiveRideByVehicle = async (req: Request, res: Response, next: 
     try {
         const vehicleId = req.params.vehicleId as string;
 
-        if (!vehicleId) {
-            return res.status(400).json({
-                success: false,
-                error: "ID vozila je obavezan"
-            });
+        if (vehicleId === undefined) {
+            return res.status(400).send("Invalid request").end();
         }
 
-        const ride = await rideService.getActiveRideByVehicle(vehicleId);
+        const result = await rideService.getActiveRideByVehicle(vehicleId);
 
-        if (!ride) {
-            return res.status(200).json({
-                success: true,
-                message: "Nema aktivne vožnje",
-                data: { ride: null }
-            });
-        }
+        if (result != null)
+            res.status(200).json(result).end();
+        else
+            res.status(404).send("Ride not found").end();
 
-        res.status(200).json({
-            success: true,
-            message: "Aktivna vožnja vozila",
-            data: { ride }
-        });
     } catch (error) {
         next(error);
     }
