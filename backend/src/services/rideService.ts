@@ -43,13 +43,9 @@ export const createRide = async (ride: IRide): Promise<IRide | null> => {
         return null;
 
     await redisClient.set(`passengers:${ride.passengerId}:active-ride`, ride.id);
-
     await redisClient.lPush(`rides:${RideStatus.Requested}`, ride.id);
 
-    const a = await getRideById(ride.id);
-    console.debug(a);
-
-    return a;
+    return await getRideById(ride.id);
 }
 
 export const findVehicleForRide = async (rideId: string): Promise<void> => {
@@ -73,13 +69,16 @@ export const findVehicleForRide = async (rideId: string): Promise<void> => {
             100,
             1
         );
-        if (nearbyVehicles.length == 0) {
-            await sleep(30000);
-        } else {
 
-            const v = nearbyVehicles[0];
-            if (v !== undefined) {
+        if (nearbyVehicles.length == 0)
+            await sleep(30000);
+        else {
+
+            const v = nearbyVehicles.pop();
+
+            if (v) {
                 const res = await acceptRide(ride.id, v.id, v.driverId);
+
                 if (res)
                     break;
             }
@@ -177,6 +176,9 @@ export const acceptRide =  async (rid: string, vid: string, did: string) => {
 
         if(ride.status == RideStatus.Requested) {
 
+            if (ride.vehicleId != null)
+                await vehicleService.updateVehicleAvailability(vid, VehicleAvailability.available);
+
             ride.vehicleId = vid;
             ride.driverId = did;
             ride.status = RideStatus.Accepted;
@@ -187,15 +189,11 @@ export const acceptRide =  async (rid: string, vid: string, did: string) => {
                 status: ride.status,
             });
 
-            if (n != 3) {
-                await setRideStatus(ride.id, RideStatus.Requested);
-                return false;
-            }
-
             await vehicleService.updateVehicleAvailability(ride.vehicleId, VehicleAvailability.occupied);
 
             await redisClient.set(`drivers:${ride.driverId}:active-ride`, ride.id);
             await redisClient.set(`vehicles:${ride.vehicleId}:active-ride`, ride.id);
+
 
             return true;
         }
