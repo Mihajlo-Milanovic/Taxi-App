@@ -12,6 +12,7 @@ const app: Application = express();
 
 app.use(express.json());
 app.use(logger);
+app.use(errorHandler);
 
 app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 app.use('/drivers', driverRoutes);
@@ -31,6 +32,5 @@ app.get("/", (req: express.Request, res: express.Response) => {
     });
 });
 
-app.use(errorHandler);
 
 export default app;

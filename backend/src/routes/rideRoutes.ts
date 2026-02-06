@@ -130,7 +130,7 @@ rideRouter.delete('/:id', rc.deleteRide);
 rideRouter.put('/:id/cancel', rc.cancelRide);
 
 /**
- *
+ * @swagger
  * /rides/{id}/findVehicle:
  *   put:
  *     tags: [Rides]
@@ -144,32 +144,6 @@ rideRouter.put('/:id/cancel', rc.cancelRide);
  *           type: string
  *         description: Ride ID
  *         example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
- *     responses:
- *       200:
- *         description: Vo?nja prihva?ena
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/RideResponse'
- *             example:
- *               success: true
- *               message: Vo?nja prihva?ena
- *               data:
- *                 ride:
- *                   id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
- *                   status: accepted
- *       404:
- *         description: Vo?nja nije prona?ena
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       400:
- *         description: Bad request - ride already accepted/in progress or ID missing
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
  */
 rideRouter.put('/:id/findVehicle', rc.findVehicleForRide);
 

@@ -22,8 +22,8 @@ export interface IRedisRide {
     status: string;
     startLocationLat: string;
     startLocationLng: string;
-    destinationLat?: string;
-    destinationLng?: string;
+    destinationLat: string;
+    destinationLng: string;
     startingTime: string;
     completionTime: string;
     price: string;

@@ -32,10 +32,10 @@ export const createRide = async (ride: IRide): Promise<IRide | null> => {
         id: ride.id,
         passengerId: ride.passengerId,
         status: RideStatus.Requested,
-        startLocationLat: ride.startLocation.latitude,
-        startLocationLng: ride.startLocation.longitude,
-        destinationLat: ride.destination.latitude,
-        destinationLng: ride.destination.longitude,
+        startLocationLat: ride.startLocation.latitude.toString(),
+        startLocationLng: ride.startLocation.longitude.toString(),
+        destinationLat: ride.destination.latitude.toString(),
+        destinationLng: ride.destination.longitude.toString(),
         price: ride.price
     });
 
@@ -78,7 +78,7 @@ export const findVehicleForRide = async (rideId: string): Promise<void> => {
         } else {
 
             const v = nearbyVehicles[0];
-            if (v) {
+            if (v !== undefined) {
                 const res = await acceptRide(ride.id, v.id, v.driverId);
                 if (res)
                     break;
@@ -192,7 +192,7 @@ export const acceptRide =  async (rid: string, vid: string, did: string) => {
                 return false;
             }
 
-            await vehicleService.updateVehicleAvailability(ride.vehicleId, VehicleAvailability.occupied)
+            await vehicleService.updateVehicleAvailability(ride.vehicleId, VehicleAvailability.occupied);
 
             await redisClient.set(`drivers:${ride.driverId}:active-ride`, ride.id);
             await redisClient.set(`vehicles:${ride.vehicleId}:active-ride`, ride.id);

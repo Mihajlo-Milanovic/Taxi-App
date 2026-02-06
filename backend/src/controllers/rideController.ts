@@ -5,7 +5,7 @@ import {IRide} from "../data/Interfaces/IRide";
 
 export const createRide = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const ride: IRide = req.body;
+        const ride = req.body as IRide;
 
         if (
             !ride.passengerId ||

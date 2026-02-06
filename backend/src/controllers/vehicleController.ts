@@ -11,9 +11,7 @@ export const createVehicle = async (req: Request, res: Response, next: NextFunct
         const result = await vehicleService.createVehicle(vehicle);
 
         if(result.length > 0)
-            res.status(201).json({
-                    "vehicleId": result
-                }).send("Vehicle created successfully.").end();
+            res.status(201).json({ "vehicleId": result }).end();
         else
             res.status(400).send("Vehicle creation failed.").end();
 
