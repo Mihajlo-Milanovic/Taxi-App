@@ -13,6 +13,7 @@ const app: Application = express();
 app.use(express.json());
 app.use(logger);
 
+
 app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 app.use('/drivers', driverRoutes);
 app.use('/passengers', passengerRoutes);
@@ -23,14 +24,16 @@ app.get("/", (req: express.Request, res: express.Response) => {
     res.json({
         message: "Taxi app is running...",
         endpoints: [
+            "docs",
             "drivers",
             "passengers",
             "vehicles",
-            "rides"
+            "rides",
         ]
     });
 });
 
 app.use(errorHandler);
+
 
 export default app;

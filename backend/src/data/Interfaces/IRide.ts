@@ -8,7 +8,7 @@ export interface IRide {
     vehicleId: string;
     status: RideStatus;
     startLocation: ILocation;
-    destination?: ILocation;
+    destination: ILocation;
     rideTimespan?: number;
     price?: number;
     // cancelReason?: string;
@@ -22,8 +22,8 @@ export interface IRedisRide {
     status: string;
     startLocationLat: string;
     startLocationLng: string;
-    destinationLat?: string;
-    destinationLng?: string;
+    destinationLat: string;
+    destinationLng: string;
     startingTime: string;
     completionTime: string;
     price: string;
