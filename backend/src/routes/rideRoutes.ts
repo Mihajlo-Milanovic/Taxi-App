@@ -144,6 +144,22 @@ rideRouter.put('/:id/cancel', rc.cancelRide);
  *           type: string
  *         description: Ride ID
  *         example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+ *     responses:
+ *       200:
+ *         description: Ride started
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 driverId:
+ *                   type: string
+ *                   example: 0bbf299b-c57d-4381-b1a9-91d7cfaa9538
+ *       404:
+ *         description: Ride not found or not requested
+ *
+ *       400:
+ *         description: Invalid request
  */
 rideRouter.put('/:id/findVehicle', rc.findVehicleForRide);
 

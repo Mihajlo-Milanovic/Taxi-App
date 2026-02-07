@@ -63,7 +63,7 @@ export const findVehicleForRide = async (rideId: string): Promise<string | null>
         return null;
 
     do {
-        console.debug(`Finding vehicle for ride ${ride.id}`);
+        console.debug(`Finding vehicle for ride <${ride.id}>`);
 
         nearbyVehicles = await vehicleService.getNearbyVehicles(
             ride.startLocation.latitude,
