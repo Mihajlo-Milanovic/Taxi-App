@@ -63,25 +63,25 @@ vehicleRouter.get('/:id', vc.getVehicleById);
  *        required: true
  *        schema:
  *          type: string
- *          example: 60
+ *          example: 44.7866
  *      - in: path
  *        name: lng
  *        required: true
  *        schema:
  *          type: string
- *          example: 50
+ *          example: 20.4489
  *      - in: path
  *        name: radius
  *        required: true
  *        schema:
  *          type: number
- *          example: 10
+ *          example: 50
  *      - in: path
  *        name: maxCount
  *        required: true
  *        schema:
  *          type: number
- *          example: 3
+ *          example: 10
  *     responses:
  *       200:
  *         content:

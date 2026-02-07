@@ -4,9 +4,10 @@ import { IVehicle } from "../data/Interfaces/IVehicle";
 
 export const createVehicle = async (req: Request, res: Response, next: NextFunction) => {
     try {
-
-        //TODO: Validation
         const vehicle : IVehicle = req.body;
+
+        if (!vehicle)
+            return res.status(400).send('Invalid request');
 
         const result = await vehicleService.createVehicle(vehicle);
 
@@ -23,8 +24,10 @@ export const createVehicle = async (req: Request, res: Response, next: NextFunct
 export const getVehicleById = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
-        //TODO: Validation
         const id: string = req.params.id as string;
+
+        if(id === undefined)
+            return res.status(400).send('Invalid request');
 
         const result = await vehicleService.getVehicleById(id);
 
@@ -52,8 +55,15 @@ export const getVehicleById = async (req: Request, res: Response, next: NextFunc
 export const getNearbyVehicles = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
-        //TODO: Validation
         const data = req.params as { lat: string, lng: string, radius: string, maxCount: string };
+
+        if(data.lat === undefined ||
+            data.lng === undefined ||
+            data.radius === undefined ||
+            data.maxCount === undefined
+        ) {
+            return res.status(400).send("Invalid request");
+        }
 
        const result = await vehicleService.getNearbyVehicles(data.lat, data.lng, +data.radius, +data.maxCount);
 
@@ -67,6 +77,9 @@ export const getNearbyVehicles = async (req: Request, res: Response, next: NextF
 export const getDriverForVehicle = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const id = req.params.id as string;
+
+        if( id === undefined )
+            return res.status(400).send("Invalid request");
 
         const result = await vehicleService.getDriverForVehicle(id);
 
@@ -83,16 +96,15 @@ export const getDriverForVehicle = async (req: Request, res: Response, next: Nex
 
 export const updateVehicleLocation = async (req: Request, res: Response, next: NextFunction) => {
     try {
-
-        //TODO: Validation
         const id = req.params.id as string;
         const { latitude, longitude, availability } = req.body;
 
-        if (!latitude || !longitude) {
-            return res.status(400).json({
-                success: false,
-                error: "Nedostaju obavezna polja: latitude, longitude"
-            });
+        if (id === undefined ||
+            latitude === undefined ||
+            longitude === undefined ||
+            availability === undefined
+        ) {
+            return res.status(400).send("Invalid request");
         }
 
         const result = await vehicleService.updateVehicleLocation(id, +latitude, +longitude, +availability);
@@ -108,10 +120,11 @@ export const updateVehicleLocation = async (req: Request, res: Response, next: N
 
 export const updateVehicleAvailability = async (req: Request, res: Response, next: NextFunction) => {
     try {
-
-        //TODO: Validation
         const id = req.params.id as string;
         const availability = req.params.availability as string;
+
+        if (id === undefined || availability === undefined)
+            return res.status(400).send("Invalid request");
 
        const result = await vehicleService.updateVehicleAvailability(id, +availability);
         if (result)
@@ -126,9 +139,10 @@ export const updateVehicleAvailability = async (req: Request, res: Response, nex
 
 export const deleteVehicle = async (req: Request, res: Response, next: NextFunction) => {
     try {
-
-        //TODO: Validation
         const id = req.params.id as string;
+
+        if (id === undefined)
+            return res.status(400).send("Invalid request");
 
         const result = await vehicleService.deleteVehicle(id);
 
