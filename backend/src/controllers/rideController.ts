@@ -178,18 +178,21 @@ export const findVehicleForRide = async (req: Request, res: Response, next: Next
             return res.status(400).send("Invalid request");
         }
 
-        await rideService.findVehicleForRide(id);
+        const result = await rideService.findVehicleForRide(id);
 
-        res.status(200).send("Searching for a vehicle");
+        if (result != null)
+            res.status(200).json({ "vehicleId": result });
+        else
+            res.status(404).send("Ride not found or not requested");
 
 
     } catch (error: unknown) {
-        if (error instanceof Error && error.message === 'Ride not found') {
-            return res.status(404).json({
-                success: false,
-                error: error.message
-            });
-        }
+        // if (error instanceof Error && error.message === 'Ride not found') {
+        //     return res.status(404).json({
+        //         success: false,
+        //         error: error.message
+        //     });
+        // }
         next(error);
     }
 };

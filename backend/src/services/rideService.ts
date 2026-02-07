@@ -48,19 +48,21 @@ export const createRide = async (ride: IRide): Promise<IRide | null> => {
     return await getRideById(ride.id);
 }
 
-export const findVehicleForRide = async (rideId: string): Promise<void> => {
+export const findVehicleForRide = async (rideId: string): Promise<string | null> => {
 
     const ride = await getRideById(rideId);
 
-    if (!ride)
+    if (ride == null)
         throw "Ride not found";
 
     let nearbyVehicles: Array<IVehicle> = [];
 
-    const rideStatus = await getRideStatus(ride.id);
+    let rideStatus = await getRideStatus(ride.id);
 
-    while (rideStatus == RideStatus.Requested) {
+    if(rideStatus != RideStatus.Requested)
+        return null;
 
+    do {
         console.debug(`Finding vehicle for ride ${ride.id}`);
 
         nearbyVehicles = await vehicleService.getNearbyVehicles(
@@ -74,17 +76,20 @@ export const findVehicleForRide = async (rideId: string): Promise<void> => {
             await sleep(30000);
         else {
 
-            const v = nearbyVehicles.pop();
+            const vehicle = nearbyVehicles.pop();
 
-            if (v) {
-                const res = await acceptRide(ride.id, v.id, v.driverId);
+            if (vehicle) {
+                const res = await acceptRide(ride.id, vehicle.id, vehicle.driverId);
 
-                if (res)
-                    break;
+                if (res) {
+                    console.debug(`Found vehicle <${vehicle.id}> for ride <${ride.id}>`);
+                    return vehicle.id;
+                }
             }
         }
-    }
-    console.debug(`Found vehicle for ride ${ride.id}`);
+    } while( rideStatus == RideStatus.Requested);
+
+    return null
 }
 
 export const getRideById = async (id: string): Promise<IRide | null> => {
@@ -193,7 +198,6 @@ export const acceptRide =  async (rid: string, vid: string, did: string) => {
 
             await redisClient.set(`drivers:${ride.driverId}:active-ride`, ride.id);
             await redisClient.set(`vehicles:${ride.vehicleId}:active-ride`, ride.id);
-
 
             return true;
         }
