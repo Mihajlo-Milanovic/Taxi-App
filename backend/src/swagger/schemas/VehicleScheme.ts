@@ -28,8 +28,8 @@
  *               example: "20.4489"
  *         availability:
  *           type: number
- *           example: 0
- *           description: 0 = available, 1 = occupied, 2 = unavailable
+ *           example: 1
+ *           description: 0 = offline, 1 = available, 2 = occupied
  */
 
 /**

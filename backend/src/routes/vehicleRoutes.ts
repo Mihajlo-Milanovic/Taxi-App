@@ -48,7 +48,25 @@ vehicleRouter.post('/', vc.createVehicle);
  */
 vehicleRouter.get('/:id', vc.getVehicleById);
 
-// vehicleRouter.get('/', vc.getAllVehicles);
+/**
+ * @swagger
+ * /vehicles/:
+ *   get:
+ *     tags: [Vehicles]
+ *     summary: Retrieve a list of vehicles
+ *     description: Retrieve a list of all vehicles.
+ *     responses:
+ *       200:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#components/schemas/Vehicle'
+ *       400:
+ *        description: Bad request
+ */
+vehicleRouter.get('/', vc.getAllVehicles);
 
 /**
  * @swagger
@@ -75,7 +93,7 @@ vehicleRouter.get('/:id', vc.getVehicleById);
  *        required: true
  *        schema:
  *          type: number
- *          example: 50
+ *          example: 100
  *      - in: path
  *        name: maxCount
  *        required: true
@@ -147,16 +165,12 @@ vehicleRouter.get('/:id/driver', vc.getDriverForVehicle);
  *         application/json:
  *           schema:
  *             type: object
- *             properties:
- *               latitude:
- *                 type: string
- *                 example: 66
- *               longitude:
- *                 type: string
- *                 example: 56
- *               availability:
- *                 type: number
- *                 example: 1
+ *             allOf:
+ *               - properties:
+ *                   availability:
+ *                     type: number
+ *                     example: 1
+ *               - $ref: '#/components/schemas/Location'
  *     responses:
  *       200:
  *         description: Vehicle location updated successfully

@@ -40,17 +40,17 @@ export const getVehicleById = async (req: Request, res: Response, next: NextFunc
     }
 };
 
-// export const getAllVehicles = async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//
-//         const vehicles = await vehicleService.getAllVehicles();
-//
-//         res.status(200).json(vehicles).end();
-//
-//     } catch (error) {
-//         next(error);
-//     }
-// };
+export const getAllVehicles = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        const result = await vehicleService.getAllVehicles();
+
+        res.status(200).json(result).end();
+
+    } catch (error) {
+        next(error);
+    }
+};
 
 export const getNearbyVehicles = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -65,7 +65,7 @@ export const getNearbyVehicles = async (req: Request, res: Response, next: NextF
             return res.status(400).send("Invalid request");
         }
 
-       const result = await vehicleService.getNearbyVehicles(data.lat, data.lng, +data.radius, +data.maxCount);
+       const result = await vehicleService.getNearbyVehicles(+data.lat, +data.lng, +data.radius, +data.maxCount);
 
        return res.status(200).json(result).end();
 

@@ -66,8 +66,8 @@ export const findVehicleForRide = async (rideId: string): Promise<string | null>
         console.debug(`Finding vehicle for ride <${ride.id}>`);
 
         nearbyVehicles = await vehicleService.getNearbyVehicles(
-            ride.startLocation.latitude,
-            ride.startLocation.longitude,
+            +ride.startLocation.latitude,
+            +ride.startLocation.longitude,
             100,
             1
         );
@@ -162,7 +162,7 @@ export const cancelRide = async (id: string) => {
                 await vehicleService.updateVehicleAvailability(ride.vehicleId, VehicleAvailability.available);
 
             await redisClient.hSet(`rides:${id}`, {status: RideStatus.Cancelled});
-            await redisClient.hExpire(`rides:${id}`, Object.keys(ride), 60);
+            await redisClient.expire(`rides:${id}`, 60);
 
             await redisClient.del(`passengers:${ride.passengerId}:active-ride`);
 

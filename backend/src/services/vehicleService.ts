@@ -23,17 +23,12 @@ export const createVehicle = async (vehicle: IVehicle): Promise<string> => {
     if (resV != 6)
         return "";
 
-    let resL = 0;
+    let res = false;
     if (vehicle.location != null) {
-         resL = await redisClient.geoAdd(`vehicles:${vehicle.availability}`, {
-                latitude: vehicle.location.latitude,
-                longitude: vehicle.location.longitude,
-                member: vid
-            }
-        );
+         res = await updateVehicleLocation(vid, +vehicle.location.latitude, +vehicle.location.longitude, vehicle.availability)
     }
 
-    if (resL == 1)
+    if (res)
         return vid;
     else
         return "";
@@ -57,12 +52,27 @@ export const getVehicleById = async (id: string): Promise<IVehicle | null> => {
     };
 }
 
-// export const getAllVehicles = async (): Promise<Array<IVehicle>> => {
-//
-//     return await redisClient.hGetAll("vehicles:") as unknown as Array<IVehicle>;
-// }
+export const getAllVehicles = async () => {
 
-export const getNearbyVehicles = async (lat: string, lng:string, radius:number, maxCount: number): Promise<Array<IVehicle>> => {
+    const vehicles = [];
+
+    for await (const keys of redisClient.scanIterator({
+        MATCH: "vehicles:*",
+        COUNT: 1
+    })) {
+        for (const key of keys) {
+            if(key.length > 10) {
+                const data = await redisClient.hGetAll(key) as IRedisVehicle;
+                const location = await getVehicleLocation(key.substring(9), +data.availability);
+                vehicles.push({ ...data, location: location});
+            }
+        }
+    }
+
+    return vehicles;
+}
+
+export const getNearbyVehicles = async (lat: number, lng:number, radius:number, maxCount: number): Promise<Array<IVehicle>> => {
 
     const nearby = await redisClient.geoSearchWith(
             `vehicles:${VehicleAvailability.available}`,
@@ -76,13 +86,11 @@ export const getNearbyVehicles = async (lat: string, lng:string, radius:number, 
     for( const nv of nearby){
 
         const rv = await getRedisVehicle(nv.member);
+        let availability = parseInt(rv.availability);
         result.push({
             ...rv,
-            availability: parseInt(rv.availability),
-            location: {
-                latitude: `${nv.coordinates?.latitude}`,
-                longitude: `${nv.coordinates?.longitude}`,
-            }
+            availability: availability,
+            location: await getVehicleLocation(rv.id, availability)
         });
     }
 
@@ -99,6 +107,7 @@ export const getDriverForVehicle = async (id: string): Promise<IDriver | null> =
 }
 
 export const getVehicleLocation = async (id: string, availability: VehicleAvailability): Promise<ILocation | null> => {
+
     const res =  await redisClient.geoPos(`vehicles:${availability}`, id);
 
     const r = res.at(0);
