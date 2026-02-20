@@ -51,14 +51,14 @@ The system simulates a taxi dispatch workflow:
 ### 1. Drivers
 | Key | Type | Description |
 |-----|------|-------------|
-| `driver:{driverId}` | Hash | Stores driver profile information |
-| `driver:{driverId}:active-ride` | String | Stores the ID of the currently active ride for the driver |
+| `drivers:{driverId}` | Hash | Stores driver profile information |
+| `drivers:{driverId}:active-ride` | String | Stores the ID of the currently active ride for the driver |
 
 ### 2. Passengers
 | Key | Type | Description |
 |-----|------|-------------|
-| `passenger:{passengerId}` | Hash | Stores passenger profile information |
-| `passenger:{passengerId}:active-ride` | String | Stores the ID of the currently active ride for the passenger |
+| `passengers:{passengerId}` | Hash | Stores passenger profile information |
+| `passengers:{passengerId}:active-ride` | String | Stores the ID of the currently active ride for the passenger |
 
 ### 3. Vehicles
 | Key | Type | Description |
@@ -74,7 +74,7 @@ The system simulates a taxi dispatch workflow:
 ### 4. Rides
 | Key | Type | Description |
 |-----|------|-------------|
-| `ride:{rideId}` | Hash | Stores ride information |
+| `rides:{rideId}` | Hash | Stores ride information |
 
 ### 5. Availability Logic
 Vehicle availability is managed using the `availability` field and Redis GEO sets.
